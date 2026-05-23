@@ -1,4 +1,4 @@
-from fastapi import APIRouter, File, UploadFile
+from fastapi import APIRouter, File, UploadFile, HTTPException
 import torch
 import torch.nn as nn
 from torchvision import models, transforms
@@ -10,49 +10,55 @@ router = APIRouter(
     tags=["Chest X-Ray Analysis"]
 )
 
-# 1. Load Model Metadata (نفس اللي سيفتها في الـ checkpoint)
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
-def load_model():
-    checkpoint = torch.load("models/chest_xray_best_model.pth", map_location=device)
-    model = models.resnet18()
-    in_features = model.fc.in_features
-    model.fc = nn.Sequential(
-        nn.BatchNorm1d(in_features),
-        nn.Dropout(p=0.5),
-        nn.Linear(in_features, 1)
-    )
-    model.load_state_dict(checkpoint["model_state_dict"])
-    model.to(device)
-    model.eval()
-    return model, checkpoint
+def load_chest_model():
+    path = "models/chest_xray_best_model.pth"
+    try:
+        checkpoint = torch.load(path, map_location=device)
+        model = models.resnet18()
+        in_features = model.fc.in_features
+        model.fc = nn.Sequential(
+            nn.BatchNorm1d(in_features),
+            nn.Dropout(p=0.5),
+            nn.Linear(in_features, 1)
+        )
+        model.load_state_dict(checkpoint["model_state_dict"])
+        model.to(device)
+        model.eval()
+        return model, checkpoint
+    except FileNotFoundError:
+        raise RuntimeError(f"Chest X-Ray model checkpoint not found at '{path}'.")
 
-model, info = load_model()
+chest_model, chest_info = load_chest_model()
 
-# 2. Preprocessing
-preprocess = transforms.Compose([
-    transforms.Resize((info["image_size"], info["image_size"])),
+chest_preprocess = transforms.Compose([
+    transforms.Resize((chest_info["image_size"], chest_info["image_size"])),
     transforms.ToTensor(),
-    transforms.Normalize(info["normalization_mean"], info["normalization_std"])
+    transforms.Normalize(chest_info["normalization_mean"], chest_info["normalization_std"])
 ])
 
 @router.post("/predict")
 async def predict_chest_xray(file: UploadFile = File(...)):
-    # قراءة الصورة
-    image_data = await file.read()
-    image = Image.open(io.BytesIO(image_data)).convert('RGB')
+    if not file.filename.lower().endswith(('.png', '.jpg', '.jpeg')):
+        raise HTTPException(status_code=400, detail="Invalid format. Please upload a PNG or JPG Chest X-Ray image.")
+        
+    try:
+        image_data = await file.read()
+        image = Image.open(io.BytesIO(image_data)).convert('RGB')
+        
+        input_tensor = chest_preprocess(image).unsqueeze(0).to(device)
+        
+        with torch.no_grad():
+            output = chest_model(input_tensor)
+            prob = torch.sigmoid(output).item()
+            prediction = "Pneumonia" if prob > 0.5 else "Normal"
     
-    # التحويل للـ Tensor
-    input_tensor = preprocess(image).unsqueeze(0).to(device)
-    
-    with torch.no_grad():
-        output = model(input_tensor)
-        prob = torch.sigmoid(output).item()
-        prediction = "Pneumonia" if prob > 0.5 else "Normal"
-    
-    return {
-        "filename": file.filename,
-        "prediction": prediction,
-        "probability": round(prob, 4),
-        "status": "success"
-    }
+        return {
+            "filename": file.filename,
+            "prediction": prediction,
+            "probability": round(prob, 4),
+            "status": "success"
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
