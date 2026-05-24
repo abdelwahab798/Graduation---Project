@@ -1,0 +1,2 @@
+data we use 
+brain stroke :https://www.kaggle.com/datasets/ozguraslank/brain-stroke-ct-dataset
