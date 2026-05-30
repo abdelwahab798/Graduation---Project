@@ -14,7 +14,6 @@ fileInput.addEventListener('change', function() {
     if (this.files && this.files[0]) {
         const file = this.files[0];
         fileName.textContent = file.name;
-
         const reader = new FileReader();
         reader.onload = function(e) {
             originalPreview.innerHTML = `<img src="${e.target.result}" style="width:100%; max-height:400px; object-fit:contain; border-radius:5px;">`;
@@ -26,7 +25,7 @@ fileInput.addEventListener('change', function() {
 uploadBtn.addEventListener('click', async () => {
     const file = fileInput.files[0];
     if (!file) {
-        alert("من فضلك اختر صورة أشعة أولاً!");
+        alert("من فضلك اختر صورة أشعة أولاً");
         return;
     }
 
