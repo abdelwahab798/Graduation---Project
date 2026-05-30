@@ -1,6 +1,5 @@
 const BACKEND_BASE_URL = "http://127.0.0.1:8000";
 
-// عناصر واجهة المستخدم (DOM Elements)
 const fileInput = document.getElementById('fileInput');
 const fileName = document.getElementById('fileName');
 const uploadBtn = document.getElementById('uploadBtn');
@@ -24,7 +23,6 @@ fileInput.addEventListener('change', function() {
     }
 });
 
-// 3. دالة إرسال الطلب (HTTP POST Request) للـ API
 uploadBtn.addEventListener('click', async () => {
     const file = fileInput.files[0];
     if (!file) {
@@ -32,16 +30,13 @@ uploadBtn.addEventListener('click', async () => {
         return;
     }
 
-    // تجهيز الـ FormData لإرسال الملف
     const formData = new FormData();
     formData.append("file", file);
 
-    // إظهار الـ Loading واخفاء النتائج السابقة
     loading.style.display = "block";
     resultOutput.innerHTML = `<p style="color:#666;">جاري التحليل الحسابي...</p>`;
     gradcamContainer.style.display = "none";
 
-    // استخراج الـ Endpoint المختار ديناميكياً
     const targetEndpoint = modelSelect.value;
     const fullUrl = `${BACKEND_BASE_URL}${targetEndpoint}`;
 
@@ -54,10 +49,8 @@ uploadBtn.addEventListener('click', async () => {
         if (response.ok) {
             const data = await response.json();
             
-            // إخفاء الـ Loading بعد نجاح الطلب
             loading.style.display = "none";
 
-            // عرض البيانات والتشخيص داخل الـ UI
             let probabilitiesHtml = '';
             if (data.all_probabilities) {
                 probabilitiesHtml = `<div style="margin-top:10px; font-size:0.95rem; color:#555;">`;
@@ -74,7 +67,6 @@ uploadBtn.addEventListener('click', async () => {
                 ${probabilitiesHtml}
             `;
 
-            // عرض صورة الـ Grad-CAM المشفّرة بـ Base64
             if (data.gradcam_image) {
                 gradcamImg.src = data.gradcam_image;
                 gradcamContainer.style.display = "block";
@@ -87,7 +79,7 @@ uploadBtn.addEventListener('click', async () => {
 
     } catch (error) {
         loading.style.display = "none";
-        resultOutput.innerHTML = `<p style="color: red; font-weight: bold;">❌ خطأ أثناء الفحص: ${error.message}</p>`;
+        resultOutput.innerHTML = `<p style="color: red; font-weight: bold;"> خطأ أثناء الفحص: ${error.message}</p>`;
         console.error(error);
     }
 });

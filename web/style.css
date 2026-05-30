@@ -138,7 +138,6 @@ input[type="file"] { display: none; }
     margin-top: 5px;
 }
 
-/* Spinner الـ Loading */
 .loading {
     display: none;
     text-align: center;
