@@ -2,32 +2,70 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <title>MediScan-AI</title>
-    <style>
-        body { font-family: Arial; background:#f3f3f3; padding:40px; text-align:center; }
-        h1 { font-size:32px; margin-bottom:10px; }
-        p { color:#555; margin-bottom:30px; }
-        .card { max-width:700px; margin:auto; background:white; padding:30px; border-radius:15px;
-            box-shadow:0 4px 20px rgba(0,0,0,0.1); }
-
-        .btn {
-            display:block; width:100%; padding:15px; margin:15px 0;
-            background:#007bff; color:white; text-decoration:none; font-size:20px;
-            border-radius:10px; transition:.3s;
-        }
-        .btn:hover { background:#0056b3; }
-    </style>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MediScan AI - Diagnostic Dashboard</title>
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
-<h1>MediScan-AI</h1>
-<p>منصة ذكية تساعدك على فهم حالتك الصحية بسهولة</p>
+    <header>
+        <h1> MediScan AI Diagnostic Dashboard</h1>
+        <p>منصة فحص واختبار نماذج الأشعة الطبية مدعومة بخاصية الـ Grad-CAM</p>
+    </header>
 
-<div class="card">
-    <a class="btn" href="diseases.html">تشخيص الأمراض</a>
-    <a class="btn" href="imaging.html">رفع الأشعة</a>
-    <a class="btn" href="chat.html">المساعد الذكي</a>
-</div>
+    <div class="container">
+        <div class="card control-panel">
+            <h2> إعدادات الفحص</h2>
+            
+            <div class="form-group">
+                <label for="modelSelect">اختر نوع الأشعة / التحليل:</label>
+                <select id="modelSelect">
+                    <option value="/chest-xray/predict">Chest X-Ray Analysis (الالتهاب الرئوي)</option>
+                    <option value="/Brain_Stroke/predict">Brain Stroke Analysis (السكتة الدماغية)</option>
+                    <option value="/Brain_MRI/predict">Brain Tumor Analysis (أورام المخ)</option>
+                    <option value="/Diabetic_Retinopathy/predict">Diabetic_Retinopathy (امراض العين)</option>
+                </select>
+            </div>
 
+            <div class="form-group">
+                <label for="fileInput" class="custom-file-upload">
+                    اختر صورة الأشعة (PNG, JPG)
+                </label>
+                <input type="file" id="fileInput" accept="image/*">
+                <div id="fileName" class="file-name">لم يتم اختيار ملف بعد</div>
+            </div>
+
+            <button id="uploadBtn" class="btn"> ابدأ التحليل الفوري</button>
+            
+            <div id="loading" class="loading">
+                <div class="spinner"></div>
+                <p>جاري معالجة الصورة واستدعاء الـ Hooks...</p>
+            </div>
+        </div>
+
+        <div class="results-panel">
+            <div class="card">
+                <h2> الصورة الأصلية</h2>
+                <div class="image-preview" id="originalPreview">
+                    <p class="placeholder-text">سيتم عرض الصورة المرفوعة هنا</p>
+                </div>
+            </div>
+
+            <div class="card">
+                <h2> نتيجة تحليل الذكاء الاصطناعي</h2>
+                <div id="resultOutput" class="result-output">
+                    <p class="placeholder-text">اضغط على زر التحليل لإظهار النتائج</p>
+                </div>
+                
+                <div id="gradcamContainer" style="display: none; margin-top: 20px;">
+                    <h3> خريطة تركيز الموديل (Grad-CAM)</h3>
+                    <img id="gradcamImg" src="" alt="Grad-CAM Output">
+                    <p class="caption">المناطق الملونة بالأحمر والبرتقالي توضح التركيز الأعلى للموديل في اتخاذ القرار.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
 </body>
 </html>

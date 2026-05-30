@@ -1,2 +1,4 @@
 data we use 
 brain stroke :https://www.kaggle.com/datasets/ozguraslank/brain-stroke-ct-dataset
+
+eyes: https://www.kaggle.com/datasets/sovitrath/diabetic-retinopathy-224x224-2019-data
