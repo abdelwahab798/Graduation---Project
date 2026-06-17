@@ -57,7 +57,7 @@ retina_preprocess = transforms.Compose([
     transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
 ])
 
-@router.post("/predict_gradcam")
+@router.post("/predict")
 async def predict_and_return_gradcam(file: UploadFile = File(...)):
     global gradients, activations
     

@@ -1,13 +1,11 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-# استدعاء الـ Routers الخاصة بك
 from api.routers import Brain_Stroke
 from api.routers import Brain_Tumor
 from api.routers import chest_xray
-from api.routers.Diabetic_Retinopathy import router as diabetic_router
+from api.routers import Diabetic_Retinopathy
 
-# 1. تعريف التطبيق مرة واحدة فقط باسم موحد
 app = FastAPI(
     title="MediScan AI Platform API",
     description="Production API Server for Medical Imaging Analysis (Grad-CAM Enabled)",
@@ -26,7 +24,7 @@ app.add_middleware(
 app.include_router(chest_xray.router)
 app.include_router(Brain_Tumor.router)
 app.include_router(Brain_Stroke.router)
-app.include_router(diabetic_router)
+app.include_router(Diabetic_Retinopathy.router)
 
 @app.get("/")
 def home():

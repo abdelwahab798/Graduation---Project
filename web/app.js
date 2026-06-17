@@ -61,7 +61,7 @@ uploadBtn.addEventListener('click', async () => {
 
             resultOutput.innerHTML = `
                 <p>اسم الملف: <strong>${data.filename}</strong></p>
-                <p>التشخيص النهائي: <span class="badge-success">${data.prediction}</span></p>
+                <p>التشخيص : <span class="badge-success">${data.prediction}</span></p>
                 <p>نسبة التأكيد الكلية: <strong>${(data.confidence * 100).toFixed(2)}%</strong></p>
                 ${probabilitiesHtml}
             `;
