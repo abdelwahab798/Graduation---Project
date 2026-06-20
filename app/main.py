@@ -5,6 +5,7 @@ from api.routers import Brain_Stroke
 from api.routers import Brain_Tumor
 from api.routers import chest_xray
 from api.routers import Diabetic_Retinopathy
+from api.routers import CKD
 
 app = FastAPI(
     title="MediScan AI Platform API",
@@ -25,6 +26,7 @@ app.include_router(chest_xray.router)
 app.include_router(Brain_Tumor.router)
 app.include_router(Brain_Stroke.router)
 app.include_router(Diabetic_Retinopathy.router)
+app.include_router(CKD.router)
 
 @app.get("/")
 def home():
