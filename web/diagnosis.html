@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <title>مدقق الأعراض | MediScan-AI</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+
+
+
+
+
+    <div class="glass-container" style="max-width: 600px;">
+        <h1>🩺 مدقق الأعراض الذكي</h1>
+        <p>أدخل أعراضك للحصول على احتمالات التشخيص.</p>
+        
+        <form id="diagForm" style="margin-top: 20px;">
+            <textarea id="symptoms" placeholder="مثال: صداع شديد، دوار، غثيان..." rows="4"></textarea>
+            <button type="button" class="btn" style="width: 100%; margin-top: 20px;" onclick="analyze()">تحليل الأعراض</button>
+        </form>
+
+        <div id="diagResult" style="margin-top: 20px; color: var(--secondary-neon);"></div>
+    </div>
+
+    <div class="back-home-wrapper">
+        <a href="dashboard.html" class="back-home-btn"><span>🏠</span> الرجوع للرئيسية</a>
+    </div>
+
+    <script>
+        function analyze() {
+            const symptoms = document.getElementById('symptoms').value;
+            if(!symptoms) return alert("من فضلك أدخل الأعراض أولاً");
+            document.getElementById('diagResult').innerHTML = "التحليل: بناءً على قاعدة البيانات، يُنصح باستشارة طبيب متخصص بخصوص هذه الأعراض.";
+        }
+    </script>
+</body>
+</html>

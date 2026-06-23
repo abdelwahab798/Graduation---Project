@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>المساعد الطبي الذكي | MediScan-AI</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        #chatBox {
+            height: 400px;
+            overflow-y: auto;
+            margin-bottom: 20px;
+            padding: 20px;
+            background: rgba(0,0,0,0.2);
+            border-radius: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+        .message { padding: 12px 18px; border-radius: 15px; max-width: 80%; }
+        .bot { align-self: flex-start; background: rgba(0, 229, 255, 0.1); border: 1px solid var(--primary-neon); }
+        .user { align-self: flex-end; background: var(--primary-neon); color: #060d1a; font-weight: 500; }
+    </style>
+</head>
+<body>
+
+
+
+
+    <div class="glass-container" style="max-width: 700px;">
+        <h1>🤖 المساعد الطبي الذكي</h1>
+        <p style="margin-bottom: 20px;">اسأل المساعد الطبي أي استفسار، وسيقوم بتحليله فوراً.</p>
+
+        <div id="chatBox">
+            <div class="message bot">أهلاً بك! كيف يمكنني مساعدتك طبياً اليوم؟</div>
+        </div>
+
+        <div style="display: flex; gap: 10px;">
+            <input type="text" id="userInput" placeholder="اكتب سؤالك الطبي هنا...">
+            <button class="btn" onclick="sendMessage()" style="padding: 10px 20px;">إرسال</button>
+        </div>
+    </div>
+
+    <div class="back-home-wrapper">
+        <a href="dashboard.html" class="back-home-btn"><span>🏠</span> الرجوع للرئيسية</a>
+    </div>
+
+    <script>
+        function sendMessage() {
+            const input = document.getElementById('userInput');
+            const chatBox = document.getElementById('chatBox');
+            if (!input.value) return;
+
+            // إضافة رسالة المستخدم
+            chatBox.innerHTML += `<div class="message user">${input.value}</div>`;
+            const userText = input.value;
+            input.value = '';
+
+            // محاكاة رد المساعد الطبي (هنا هتربط مع الـ API الخاص بـ LLM بتاعكم)
+            setTimeout(() => {
+                chatBox.innerHTML += `<div class="message bot">جارٍ تحليل سؤالك "${userText}"... سأعطيك إجابة دقيقة بناءً على قاعدة البيانات الطبية الخاصة بي.</div>`;
+                chatBox.scrollTop = chatBox.scrollHeight;
+            }, 1000);
+        }
+    </script>
+</body>
+</html>

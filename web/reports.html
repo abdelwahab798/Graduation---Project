@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>السجل الطبي والتقارير | MediScan-AI</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        /* تنسيق جدول التقارير الطبية بشكل زجاجي احترافي */
+        .report-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 25px;
+            text-align: right;
+        }
+        .report-table th, .report-table td {
+            padding: 15px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+        }
+        .report-table th {
+            color: var(--primary-neon);
+            font-weight: 700;
+            border-bottom: 2px solid var(--primary-neon);
+        }
+        .report-table tr:hover {
+            background: rgba(255, 255, 255, 0.02);
+        }
+        .status-badge {
+            background: rgba(0, 229, 255, 0.1);
+            color: var(--primary-neon);
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 0.85rem;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+
+
+
+
+
+
+    <div class="glass-container" style="max-width: 900px; padding: 40px 30px;">
+        <div style="font-size: 50px; margin-bottom: 10px; filter: drop-shadow(0 0 8px var(--primary-neon));">📂</div>
+        <h1>السجل الطبي وتقارير الفحوصات</h1>
+        <p>أرشيف متكامل لجميع حالات الأشعة والتشخيصات التي تمت عبر النظام بالذكاء الاصطناعي</p>
+
+        <table class="report-table">
+            <thead>
+                <tr>
+                    <th>معرف الفحص</th>
+                    <th>نوع الموديل المستخدم</th>
+                    <th>التشخيص النهائي</th>
+                    <th>نسبة التأكيد</th>
+                    <th>الإجراء</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>#MS-9021</td>
+                    <td>أورام المخ (Brain Tumor)</td>
+                    <td><span class="status-badge" style="color: #ff3333; background: rgba(255,51,51,0.1);">وجود ورم (Positive)</span></td>
+                    <td><strong>94.20%</strong></td>
+                    <td><button class="btn" style="padding: 6px 12px; font-size: 0.85rem;" onclick="window.print()">طباعة 🖨️</button></td>
+                </tr>
+                <tr>
+                    <td>#MS-8840</td>
+                    <td>أشعة الصدر (Chest X-Ray)</td>
+                    <td><span class="status-badge" style="color: var(--secondary-neon); background: rgba(0,255,136,0.1);">حالة سليمة (Normal)</span></td>
+                    <td><strong>98.15%</strong></td>
+                    <td><button class="btn" style="padding: 6px 12px; font-size: 0.85rem;" onclick="window.print()">طباعة 🖨️</button></td>
+                </tr>
+                <tr>
+                    <td>#MS-7512</td>
+                    <td>السكتة الدماغية (Brain Stroke)</td>
+                    <td><span class="status-badge" style="color: #ffaa00; background: rgba(255,170,0,0.1);">إصابة مبكرة (Ischemic)</span></td>
+                    <td><strong>89.50%</strong></td>
+                    <td><button class="btn" style="padding: 6px 12px; font-size: 0.85rem;" onclick="window.print()">طباعة 🖨️</button></td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div class="back-home-wrapper">
+        <a href="dashboard.html" class="back-home-btn">
+            <span>🏠</span>
+            <span>العودة للوحة التحكم</span>
+        </a>
+    </div>
+</body>
+</html>
