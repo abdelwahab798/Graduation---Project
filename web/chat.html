@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>المساعد الطبي الذكي | MediScan-AI</title>
@@ -28,7 +29,7 @@
 
 
     <div class="glass-container" style="max-width: 700px;">
-        <h1>🤖 المساعد الطبي الذكي</h1>
+        <h1> المساعد الطبي الذكي</h1>
         <p style="margin-bottom: 20px;">اسأل المساعد الطبي أي استفسار، وسيقوم بتحليله فوراً.</p>
 
         <div id="chatBox">
@@ -41,27 +42,62 @@
         </div>
     </div>
 
-    <div class="back-home-wrapper">
-        <a href="dashboard.html" class="back-home-btn"><span>🏠</span> الرجوع للرئيسية</a>
-    </div>
+    
 
     <script>
-        function sendMessage() {
-            const input = document.getElementById('userInput');
-            const chatBox = document.getElementById('chatBox');
-            if (!input.value) return;
+        async function sendMessage() {
+    const input = document.getElementById('userInput');
+    const chatBox = document.getElementById('chatBox');
+    if (!input.value.trim()) return;
 
-            // إضافة رسالة المستخدم
-            chatBox.innerHTML += `<div class="message user">${input.value}</div>`;
-            const userText = input.value;
-            input.value = '';
+    const userText = input.value.trim();
 
-            // محاكاة رد المساعد الطبي (هنا هتربط مع الـ API الخاص بـ LLM بتاعكم)
-            setTimeout(() => {
-                chatBox.innerHTML += `<div class="message bot">جارٍ تحليل سؤالك "${userText}"... سأعطيك إجابة دقيقة بناءً على قاعدة البيانات الطبية الخاصة بي.</div>`;
-                chatBox.scrollTop = chatBox.scrollHeight;
-            }, 1000);
+    // 1. إضافة رسالة المستخدم للـ Chat Box
+    chatBox.innerHTML += `<div class="message user">${userText}</div>`;
+    input.value = '';
+    chatBox.scrollTop = chatBox.scrollHeight;
+
+    // 2. إضافة رسالة مؤقتة "جاري الكتابة..." من البوت
+    const loadingId = 'loading-' + Date.now();
+    chatBox.innerHTML += `<div class="message bot" id="${loadingId}"> جاري تفكير الطبيب المساعد...</div>`;
+    chatBox.scrollTop = chatBox.scrollHeight;
+
+    try {
+        // 3. إرسال السؤال إلى الـ FastAPI Backend
+        const response = await fetch('http://127.0.0.1:8000/api/rag/ask', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ question: userText })
+        });
+
+        const data = await response.json();
+        const loadingElement = document.getElementById(loadingId);
+
+        if (response.ok) {
+            loadingElement.innerHTML = marked.parse(data.answer);
+            
+        } else {
+            loadingElement.innerHTML = `عذراً، حدث خطأ في السيرفر: ${data.detail || 'يرجى المحاولة لاحقاً.'}`;
         }
+
+    } catch (error) {
+        console.error("Error connecting to server:", error);
+        const loadingElement = document.getElementById(loadingId);
+        if (loadingElement) {
+            loadingElement.innerHTML = " تعذر الاتصال بالسيرفر، تأكد من تشغيل الـ Backend Server.";
+        }
+    }
+    chatBox.scrollTop = chatBox.scrollHeight;
+}
+
+// إضافة ميزة الإرسال عند الضغط على زر Enter من الكيبورد لراحة المستخدم
+document.getElementById('userInput').addEventListener('keypress', function (e) {
+    if (e.key === 'Enter') {
+        sendMessage();
+    }
+});
     </script>
 </body>
 </html>

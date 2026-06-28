@@ -5,18 +5,157 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>MediScan AI - Diagnostic Dashboard</title>
     <link rel="stylesheet" href="style.css">
+    <style>
+        /* تصحيح كامل لجسم الصفحة لضمان الترتيب العمودي والتنظيم */
+        body {
+            display: block !important;
+            margin: 0 !important;
+            padding: 0 !important;
+        }
+
+        /* حاوية مرنة ومنظمة جداً في المنتصف */
+        .custom-main-container {
+            display: flex !important;
+            flex-direction: column !important;
+            align-items: center !important;
+            justify-content: center !important;
+            max-width: 950px !important; /* حجم ملموم ولطيف */
+            margin: 0 auto !important;
+            padding: 30px 15px !important;
+            box-sizing: border-box !important;
+            float: none !important;
+        }
+
+        /* ضبط الهيدر في المنتصف وبشكل هادئ */
+        .custom-main-container header {
+            text-align: center !important;
+            margin-bottom: 30px !important;
+            width: 100% !important;
+            position: relative !important;
+            left: auto !important;
+            right: auto !important;
+            top: auto !important;
+        }
+
+        /* 1- كارت الإعدادات (الفورم) - ملموم وفي النص بالملي وبحجم شيك جداً */
+        .custom-main-container .control-panel {
+            width: 100% !important;
+            max-width: 480px !important; /* مقاس لطيف ومظبوط */
+            margin: 0 auto 35px auto !important;
+            float: none !important;
+            display: block !important;
+            position: relative !important;
+            box-sizing: border-box !important;
+        }
+
+        /* 2- شبكة عرض الصور أسفل الفورم - مقسمة بالتساوي ومنظمة */
+        .custom-main-container .results-panel {
+            display: grid !important;
+            grid-template-columns: 1fr 1fr !important; /* عمودين متناسقين بجانب بعض */
+            gap: 25px !important;
+            width: 100% !important;
+            max-width: 900px !important;
+            margin: 0 auto !important;
+            float: none !important;
+            clear: both !important;
+            position: relative !important;
+        }
+
+        /* كروت الصور - ملمومة وبنفس الطابع الزجاجي */
+        .custom-main-container .results-panel .card {
+            width: 100% !important;
+            margin: 0 !important;
+            padding: 20px !important;
+            box-sizing: border-box !important;
+            display: flex !important;
+            flex-direction: column !important;
+            position: relative !important;
+            left: auto !important;
+            right: auto !important;
+        }
+        .role-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 14px;
+    border-radius: 20px;
+    font-size: 0.82rem;
+    font-weight: 700;
+    margin-top: 10px;
+}
+.role-patient {
+    background: rgba(0, 255, 204, 0.1);
+    color: var(--secondary-neon);
+    border: 1px solid var(--secondary-neon);
+}
+.role-doctor {
+    background: rgba(66, 153, 225, 0.1);
+    color: var(--accent-blue);
+    border: 1px solid var(--accent-blue);
+}
+
+        /* المقاس اللطيف والمظبوط لحاوية الصور لعدم التداخل */
+        .image-preview, .gradcam-wrapper {
+            width: 100% !important;
+            height: 280px !important; /* مقاس متناسق ولطيف جداً ومش ضخم */
+            background: rgba(0, 0, 0, 0.3) !important;
+            border: 1px dashed rgba(255, 255, 255, 0.15) !important;
+            border-radius: 12px !important;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            overflow: hidden !important;
+            margin-top: 15px !important;
+            box-sizing: border-box !important;
+        }
+
+        /* ضبط الصورة الطبية داخل الإطار اللطيف */
+        .image-preview img, #gradcamImg {
+            width: 100% !important;
+            height: 100% !important;
+            object-fit: contain !important; /* يحافظ على أبعاد الأشعة تماماً */
+        }
+
+        /* تنسيق نصوص العناوين والنتائج لجعلها أرتب */
+        .custom-main-container h2 {
+            font-size: 1.25rem !important;
+            margin-bottom: 10px !important;
+            text-align: center !important;
+        }
+
+        .caption {
+            font-size: 0.8rem !important;
+            color: #a0aec0 !important;
+            margin-top: 10px !important;
+            text-align: center !important;
+            line-height: 1.4 !important;
+        }
+
+        /* دعم الشاشات الصغيرة وتفادي التداخل في الأبعاد */
+        @media (max-width: 768px) {
+            .custom-main-container .results-panel {
+                grid-template-columns: 1fr !important;
+            }
+        }
+    </style>
 </head>
 <body>
 
-    <header>
-        <h1> MediScan AI Diagnostic Dashboard</h1>
-        <p>منصة فحص واختبار نماذج الأشعة الطبية مدعومة بخاصية الـ Grad-CAM</p>
-    </header>
+    <div class="custom-main-container">
+        
+        <header>
+            <h1 style="font-size: 2rem; color: #ffffff;">MediScan AI Diagnostic Dashboard</h1>
+            <p style="color: #a0aec0; margin-top: 5px; font-size: 0.95rem;">منصة فحص واختبار نماذج الأشعة الطبية مدعومة بخاصية الـ Grad-CAM</p>
+            <div id="roleBadge" class="role-badge role-patient">
+            <span>🟢</span>
+            <span id="roleLabel">مريض</span>
+        </div>
+        </header>
+        
 
-    <div class="container">
         <div class="card control-panel">
             <h2> إعدادات الفحص</h2>
-            
+
             <div class="form-group">
                 <label for="modelSelect">اختر نوع الأشعة / التحليل:</label>
                 <select id="modelSelect">
@@ -35,8 +174,33 @@
                 <div id="fileName" class="file-name">لم يتم اختيار ملف بعد</div>
             </div>
 
-            <button id="uploadBtn" class="btn"> ابدأ التحليل الفوري</button>
-            
+            <div id="patientInputContainer"></div>
+
+            <button type="button" id="uploadBtn" class="btn" style="width: 100%; margin-top: 10px;" onclick="return false;"> ابدأ التحليل الفوري</button>
+            <!-- 🔥 Doctor Correction Panel -->
+<div id="correctionPanel" style="display:none; margin-top:15px; padding:10px; background:rgba(255,255,255,0.05); border-radius:10px;">
+
+    <h3 style="color:#00ffcc; text-align:center; font-size:1rem;">
+        🩺 تصحيح نتيجة التحليل (Doctor Only)
+    </h3>
+
+    <div class="form-group">
+        <label>Prediction ID</label>
+        <input type="number" id="predictionIdInput" placeholder="Auto filled after prediction" 
+               style="width:100%; padding:8px; margin-top:5px;">
+    </div>
+
+    <div class="form-group">
+        <label>Corrected Result</label>
+        <input type="text" id="correctedResultInput" 
+               style="width:100%; padding:8px; margin-top:5px;">
+    </div>
+
+    <button id="submitCorrectionBtn" class="btn" style="width:100%; margin-top:10px;">
+        Submit Correction
+    </button>
+</div>
+
             <div id="loading" class="loading">
                 <div class="spinner"></div>
                 <p>جاري معالجة الصورة واستدعاء الـ Hooks...</p>
@@ -44,26 +208,33 @@
         </div>
 
         <div class="results-panel">
+            
             <div class="card">
-                <h2> الصورة الأصلية</h2>
+                <h2>الصورة الأصلية</h2>
                 <div class="image-preview" id="originalPreview">
-                    <p class="placeholder-text">سيتم عرض الصورة المرفوعة هنا</p>
+                    <p class="placeholder-text" style="font-size: 0.85rem; color: #718096;">سيتم عرض الصورة المرفوعة هنا</p>
                 </div>
             </div>
 
             <div class="card">
-                <h2> نتيجة تحليل الذكاء الاصطناعي</h2>
+                <h2>📊 نتيجة تحليل الذكاء الاصطناعي</h2>
                 <div id="resultOutput" class="result-output">
-                    <p class="placeholder-text">اضغط على زر التحليل لإظهار النتائج</p>
+                    <p class="placeholder-text" style="font-size: 0.85rem; color: #718096;">اضغط على زر التحليل لإظهار النتائج</p>
                 </div>
-                
-                <div id="gradcamContainer" style="display: none; margin-top: 20px;">
-                    <h3> خريطة تركيز الموديل (Grad-CAM)</h3>
-                    <img id="gradcamImg" src="" alt="Grad-CAM Output">
-                    <p class="caption">المناطق الملونة بالأحمر والبرتقالي توضح التركيز الأعلى للموديل في اتخاذ القرار.</p>
+
+                <div id="gradcamContainer" style="display: none; margin-top: 15px; width: 100%;">
+                    <h3 style="color: #00ffcc; font-size: 1rem; margin-bottom: 5px; text-align: center;">🔥 خريطة تركيز الموديل (Grad-CAM)</h3>
+                    
+                    <div class="gradcam-wrapper">
+                        <img id="gradcamImg" src="" alt="Grad-CAM Output">
+                    </div>
+                    
+                    <p class="caption">المناطق الملونة بالأحمر والبرتقالي توضح التركيز الأعلى للموديل.</p>
                 </div>
             </div>
+
         </div>
+
     </div>
 
     <script src="app.js"></script>

@@ -8,21 +8,14 @@
 </head>
 <body>
 
-
-
-
-
-
-
-
     <div class="glass-container" style="max-width: 450px; padding: 45px 35px;">
-        <div style="font-size: 50px; margin-bottom: 10px; filter: drop-shadow(0 0 8px var(--primary-neon));">🔐</div>
+        <div style="font-size: 50px; margin-bottom: 10px; filter: drop-shadow(0 0 8px var(--primary-neon));"></div>
         <h2>تسجيل الدخول</h2>
         <p style="margin-bottom: 30px;">مرحباً بك في المنصة الطبية المتكاملة MediScan-AI</p>
 
         <form id="loginForm" style="text-align: right; display: grid; gap: 20px;">
             <div>
-                <label style="color: var(--primary-neon); font-weight: 500;">البريد الإلكتروني</label>
+                <label style="color: var(--primary-neon); font-weight: 500;">البريد الإلكتروني أو اسم المستخدم</label>
                 <input type="email" id="email" required placeholder="doctor@example.com">
             </div>
             <div>
@@ -39,11 +32,62 @@
     </div>
 
     <script>
-        // كود الجافا سكريبت للانتقال التفاعلي بعد الضغط على زر الدخول
-        document.getElementById('loginForm').addEventListener('submit', function(e) {
-            e.preventDefault();
-            window.location.href = 'dashboard.html';
+document.getElementById('loginForm').addEventListener('submit', async function(e) {
+    e.preventDefault();
+
+    const email = document.getElementById('email').value;
+    const password = document.getElementById('password').value;
+
+    const formData = new URLSearchParams();
+    formData.append('username', email); 
+    formData.append('password', password);
+
+    try {
+        const response = await fetch('http://127.0.0.1:8000/api/auth/login', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded' 
+            },
+            body: formData
         });
+
+        const data = await response.json();
+
+        if (response.ok) {
+            // 💡 توحيد مسميات التوكن لتعمل مع الـ Dashboard بسلاسة
+            localStorage.setItem('token', data.access_token); // الاسم الموحد لصفحة الفحوصات
+            localStorage.setItem('access_token', data.access_token); // الحفاظ على الاسم القديم كـ Fallback
+            localStorage.setItem('token_type', data.token_type);
+            
+            try {
+                const base64Url = data.access_token.split('.')[1];
+                const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+                const jsonPayload = decodeURIComponent(atob(base64).split('').map(function(c) {
+                    return '%' + ('0' + c.charCodeAt(0).toString(16)).slice(-2);
+                }).join(''));
+
+                const decodedToken = JSON.parse(jsonPayload);
+                
+                // 💡 الحل الجذري: تخزين الـ Role بالاسمين الموحد والقديم لقطع الشك باليقين
+                localStorage.setItem('role', decodedToken.role);        // الاسم الموحد الجديد المعتمد في الـ Dashboard
+                localStorage.setItem('user_role', decodedToken.role);   // الاسم القديم منعاً لضرب أي كود آخر
+                localStorage.setItem('user_id', decodedToken.user_id);
+                
+            } catch (jwtError) {
+                console.error("فشل فك بيانات التوكن في الفرونت إند:", jwtError);
+            }
+
+            alert('تم تسجيل الدخول بنجاح! جاري الانتقال للوحة التحكم...');
+            window.location.href = 'dashboard.html';
+        } else {
+            alert('خطأ في تسجيل الدخول: ' + (data.detail || 'اسم المستخدم أو كلمة المرور غير صحيحة'));
+        }
+
+    } catch (error) {
+        console.error('Error:', error);
+        alert('تعذر الاتصال بالسيرفر، تأكد أن الباكيند يعمل.');
+    }
+});
     </script>
 </body>
 </html>

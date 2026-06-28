@@ -8,47 +8,133 @@
 </head>
 <body>
 
-
-
-
-
-
-
-
-    <div class="glass-container" style="max-width: 480px; padding: 45px 35px;">
+    <div class="glass-container" style="max-width: 480px; padding: 35px 35px;">
         <div style="font-size: 50px; margin-bottom: 10px; filter: drop-shadow(0 0 8px var(--secondary-neon));">🚀</div>
         <h2>إنشاء حساب جديد</h2>
-        <p style="margin-bottom: 30px;">انضم إلينا الآن وابدأ في فحص الأشعة بدعم الذكاء الاصطناعي</p>
+        <p style="margin-bottom: 25px;">انضم إلينا الآن وابدأ في فحص الأشعة بدعم الذكاء الاصطناعي</p>
 
-        <form id="signupForm" style="text-align: right; display: grid; gap: 18px;">
+        <form id="signupForm" style="text-align: right; display: grid; gap: 15px;">
             <div>
                 <label style="color: var(--primary-neon); font-weight: 500;">الاسم بالكامل</label>
                 <input type="text" id="fullName" required placeholder="أدخل اسمك الثلاثي">
             </div>
             <div>
                 <label style="color: var(--primary-neon); font-weight: 500;">البريد الإلكتروني</label>
-                <input type="email" id="email" required placeholder="doctor@example.com">
+                <input type="email" id="email" required placeholder="name@example.com">
             </div>
+
+            <div>
+                <label style="color: var(--primary-neon); font-weight: 500;">نوع الحساب (الدور)</label>
+                <select id="role" required style="width: 100%; padding: 10px; border-radius: 8px; background: rgba(255,255,255,0.1); color: #fff; border: 1px solid rgba(255,255,255,0.2);">
+                    <option value="patient" selected style="color: #000;">مريض (Patient)</option>
+                    <option value="doctor" style="color: #000;">طبيب / ممارس طبي (Doctor)</option>
+                </select>
+            </div>
+            
+            <div id="patientFields" style="display: grid; gap: 15px;">
+                <div>
+                    <label style="color: var(--primary-neon); font-weight: 500;">العمر (السن)</label>
+                    <input type="number" id="age" min="1" max="120" placeholder="أدخل عمرك الحقيقي">
+                </div>
+
+                <div>
+                    <label style="color: var(--primary-neon); font-weight: 500;">الجنس</label>
+                    <select id="gender" style="width: 100%; padding: 10px; border-radius: 8px; background: rgba(255,255,255,0.1); color: #fff; border: 1px solid rgba(255,255,255,0.2);">
+                        <option value="" disabled selected style="color: #000;">اختر الجنس</option>
+                        <option value="Male" style="color: #000;">ذكر (Male)</option>
+                        <option value="Female" style="color: #000;">أنثى (Female)</option>
+                    </select>
+                </div>
+            </div>
+
             <div>
                 <label style="color: var(--primary-neon); font-weight: 500;">كلمة المرور</label>
                 <input type="password" id="password" required placeholder="••••••••">
             </div>
 
-            <button type="submit" class="btn" style="width: 100%; margin-top: 10px; background: linear-gradient(135deg, var(--secondary-neon), #00e5ff);">تسجيل الحساب الجديد</button>
+            <button type="button" id="submitBtn" class="btn" style="width: 100%; margin-top: 10px; background: linear-gradient(135deg, var(--secondary-neon), #00e5ff);">تسجيل الحساب الجديد</button>
         </form>
 
-        <p style="margin-top: 30px; font-size: 0.95rem;">
-            تمتلك حساباً بالفعل؟ <a href="login.html" style="color: var(--secondary-neon); text-decoration: none; font-weight: 700; border-bottom: 1px dashed var(--secondary-neon);">تسجيل الدخول</a>
+        <p style="margin-top: 25px; font-size: 0.95rem;">
+            تمتلك حساباً بالفعل؟ 
+            <a id="goToLogin" href="login.html" style="color: var(--secondary-neon); text-decoration: none; font-weight: 700; border-bottom: 1px dashed var(--secondary-neon);">تسجيل الدخول</a>
         </p>
     </div>
 
     <script>
-        // كود الجافا سكريبت للتوجيه التلقائي بعد إتمام التسجيل الوهمي
-        document.getElementById('signupForm').addEventListener('submit', function(e) {
-            e.preventDefault();
-            alert('تم إنشاء الحساب بنجاح! سيتم توجيهك الآن للوحة التحكم.');
-            window.location.href = 'dashboard.html';
+// 💡 إظهار وإخفاء حقول المريض بناءً على الـ Role المختار
+document.getElementById('role').addEventListener('change', function() {
+    const patientFields = document.getElementById('patientFields');
+    if (this.value === 'doctor') {
+        patientFields.style.display = 'none';
+    } else {
+        patientFields.style.display = 'grid';
+    }
+});
+
+document.getElementById('submitBtn').addEventListener('click', async function() {
+    const fullName = document.getElementById('fullName').value.trim();
+    const email = document.getElementById('email').value.trim();
+    const role = document.getElementById('role').value;
+    const password = document.getElementById('password').value;
+    
+    const ageInput = document.getElementById('age').value.trim();
+    const genderInput = document.getElementById('gender').value;
+
+    // التحقق من الحقول الأساسية لجميع المستخدمين
+    if (!fullName || !email || !password || !role) {
+        alert("برجاء ملء جميع الحقول الأساسية");
+        return;
+    }
+
+    // التحقق من السن والجنس فقط إذا كان الحساب مريض
+    if (role === 'patient' && (!ageInput || !genderInput)) {
+        alert("برجاء إدخال السن والجنس لإتمام ملفك الطبي كمريض");
+        return;
+    }
+
+    // تجهيز الـ Payload ليتطابق مع الـ Pydantic Schema الجديدة
+    const signupData = {
+        username: email, 
+        email: email,
+        password: password,
+        full_name: fullName,
+        role: role,
+    };
+    if (role === 'patient') {
+    signupData.age = parseFloat(ageInput);
+    signupData.gender = genderInput;
+    } else {
+    // لو طبيب، يفضل متجيبش سيرة الحقول دي في الـ JSON عشان الـ Validation
+    signupData.age = null;
+    signupData.gender = null;
+}
+
+    try {
+        const response = await fetch('http://127.0.0.1:8000/api/auth/signup', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(signupData)
         });
+
+        const data = await response.json();
+
+        if (response.ok) {
+            alert('إنشاء الحساب تم بنجاح، يرجى تسجيل الدخول الآن');
+            try {
+                window.location.replace("login.html");
+            } catch (err) {
+                document.getElementById('goToLogin').click();
+            }
+        } else {
+            alert('خطأ أثناء التسجيل: ' + (data.detail || 'يرجى المحاولة مرة أخرى'));
+        }
+
+    } catch (error) {
+        console.error('Error:', error);
+        alert('عذراً، تعذر الاتصال بالسيرفر. تأكد أن الباكيند يعمل بنجاح.');
+    }
+});
     </script>
 </body>
 </html>

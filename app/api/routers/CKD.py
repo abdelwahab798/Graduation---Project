@@ -1,47 +1,106 @@
-from fastapi import FastAPI, HTTPException,APIRouter
+from fastapi import APIRouter, HTTPException, Depends
 from pydantic import BaseModel, Field
 import joblib
 import pandas as pd
 import numpy as np
+import os
 
-router=APIRouter(prefix="/CKD",
-                 tags=["CKD_pipeline"])
+from sqlalchemy.orm import Session
+import Database.models as models_db
+from Database.config import get_db
+from .auth import get_current_user
+
+
+router = APIRouter(prefix="/CKD", tags=["CKD_pipeline"])
+
+# load model
 try:
-    lite_pipeline = joblib.load(r"D:\__Projects\Graduation---Project\app\models\ckd_stage_lite_pipeline.pkl")
+    lite_pipeline = joblib.load(
+        r"D:\__Projects\Graduation---Project\app\models\ckd_stage_lite_pipeline.pkl"
+    )
 except Exception as e:
     print(f"Error loading model: {e}")
     lite_pipeline = None
 
+
+# input schema
 class PatientData(BaseModel):
-    gfr: float = Field(..., description="Glomerular Filtration Rate", example=90.0)
-    c3_c4: float = Field(..., description="C3/C4 Complement levels", example=1.2)
-    bun: float = Field(..., description="Blood Urea Nitrogen", example=15.0)
-    blood_pressure: float = Field(..., description="Blood Pressure (Systolic)", example=120.0)
-    serum_creatinine: float = Field(..., description="Serum Creatinine level", example=1.0)
-    urine_ph: float = Field(..., description="Urine pH level", example=6.0)
-    months: float = Field(..., description="Duration of symptoms in months", example=6.0)
-    oxalate_levels: float = Field(..., description="Oxalate Levels", example=20.0)
-    stress_level: str = Field(..., description="مستوى التوتر (مثال: Low, Medium, High)", example="Low")
-    family_history: str = Field(..., description="التاريخ العائلي: Yes أو No", example="No")
+    patient_name_note: str | None = None
+    gfr: float
+    c3_c4: float
+    bun: float
+    blood_pressure: float
+    serum_creatinine: float
+    urine_ph: float
+    months: float
+    oxalate_levels: float
+    stress_level: str
+    family_history: str
+
 
 @router.post("/predict")
-def predict_ckd_stage(data: PatientData):
+def predict_ckd_stage(
+    data: PatientData,
+    db: Session = Depends(get_db),
+    current_user: models_db.User = Depends(get_current_user)
+):
     if lite_pipeline is None:
-        raise HTTPException(status_code=500, detail="Lite model pipeline is not loaded.")
-    
+        raise HTTPException(status_code=500, detail="Model not loaded")
+
+    # تحديد patient_id و doctor_id
+    patient_id = None
+    doctor_id = None
+
+    if current_user.role == "patient":
+        if not current_user.patient_profile:
+            raise HTTPException(status_code=403, detail="Patient profile not found")
+        patient_id = current_user.patient_profile.patient_id
+
+    elif current_user.role == "doctor":
+        doctor_id = current_user.user_id
+
     try:
-        input_dict = data.model_dump()
-        input_df = pd.DataFrame([input_dict])
-        
-        prediction = lite_pipeline.predict(input_df)[0]
-        probabilities = lite_pipeline.predict_proba(input_df)[0]
-        
+        input_df = pd.DataFrame([data.model_dump()])
+        prediction = int(lite_pipeline.predict(input_df)[0])
+        confidence = float(lite_pipeline.predict_proba(input_df)[0][prediction])
+
+        db_record = models_db.CKDData(
+            patient_id=patient_id,  # None لو doctor
+            doctor_id=doctor_id,    # None لو patient
+            gfr=data.gfr,
+            c3_c4=data.c3_c4,
+            bun=data.bun,
+            patient_name_note=data.patient_name_note if current_user.role == "doctor" else None, 
+            blood_pressure=data.blood_pressure,
+            serum_creatinine=data.serum_creatinine,
+            urine_ph=data.urine_ph,
+            months=data.months,
+            oxalate_levels=data.oxalate_levels,
+            stress_level=data.stress_level,
+            family_history=data.family_history
+        )
+        db.add(db_record)
+        db.flush()
+
+        db_prediction = models_db.Prediction(
+            patient_id=patient_id,
+            doctor_id=doctor_id,
+            ckd_record_id=db_record.record_id,
+            model_name="CKD_Lite_Pipeline_v1",
+            prediction_result=str(prediction),
+            confidence_score=round(confidence, 4),
+        )
+        db.add(db_prediction)
+        db.commit()
+
         return {
-            "predicted_stage": int(prediction),
-            "confidence_score": round(float(probabilities[prediction]) * 100, 2), 
-            "status": "Success"
+            "prediction_id": db_prediction.prediction_id,
+            "predicted_stage": prediction,
+            "confidence_score": round(confidence * 100, 2),
+            "status": "Success",
+            "can_correct": current_user.role == "doctor"  # ← الـ frontend يعرف يظهر الـ field ولا لأ
         }
 
     except Exception as e:
-        raise HTTPException(status_code=400, detail=f"Prediction error: {str(e)}")
-
+        db.rollback()
+        raise HTTPException(status_code=400, detail=str(e))

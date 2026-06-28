@@ -2,37 +2,520 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <title>مدقق الأعراض | MediScan-AI</title>
+    <title>مشخص التحاليل | MediScan-AI</title>
     <link rel="stylesheet" href="style.css">
+    <style>
+        .section-title {
+            font-size: 1rem;
+            font-weight: 700;
+            color: var(--accent-blue);
+            margin-bottom: 8px;
+        }
+        .dynamic-inputs {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            text-align: right;
+            margin-top: 15px;
+        }
+        .dynamic-inputs label {
+            font-size: 0.85rem;
+            color: #a0aec0;
+            display: block;
+            margin-bottom: 5px;
+        }
+        .dynamic-inputs input,
+        .dynamic-inputs select {
+            width: 100%;
+            background: rgba(2, 6, 15, 0.5);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: #ffffff;
+            padding: 12px;
+            border-radius: 8px;
+            outline: none;
+            font-size: 0.95rem;
+            box-sizing: border-box;
+        }
+        .dynamic-inputs input:focus,
+        .dynamic-inputs select:focus {
+            border-color: var(--accent-blue);
+        }
+        .hidden-section {
+            display: none !important;
+        }
+        #modelSelect {
+            width: 100%;
+            background: rgba(2, 6, 15, 0.9);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: #ffffff;
+            font-size: 1rem;
+            border-radius: 12px;
+            padding: 15px;
+            outline: none;
+            cursor: pointer;
+        }
+        .result-card {
+            background: rgba(0, 255, 204, 0.05);
+            border: 1px solid var(--secondary-neon);
+            padding: 15px;
+            border-radius: 10px;
+            margin-top: 20px;
+            text-align: right;
+        }
+        .result-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+            font-size: 0.95rem;
+        }
+        .result-row:last-child {
+            border-bottom: none;
+        }
+        .correction-box {
+            margin-top: 15px;
+            padding: 15px;
+            border-radius: 10px;
+            border: 1px solid #f6ad55;
+            background: rgba(246, 173, 85, 0.07);
+        }
+        .correction-title {
+            font-size: 0.9rem;
+            font-weight: 700;
+            color: #f6ad55;
+            margin-bottom: 10px;
+        }
+        .correction-input-row {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+        .correction-input-row input {
+            flex: 1;
+            background: rgba(2, 6, 15, 0.5);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: #ffffff;
+            padding: 10px 14px;
+            border-radius: 8px;
+            outline: none;
+            font-size: 0.95rem;
+        }
+        .correction-input-row input:focus {
+            border-color: #f6ad55;
+        }
+        .btn-correct-large {
+            padding: 10px 18px;
+            background: #b7791f;
+            color: #fff;
+            border: none;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            cursor: pointer;
+            white-space: nowrap;
+        }
+        .btn-correct-large:hover { background: #975a16; }
+        .btn-correct-large:disabled { opacity: 0.5; cursor: not-allowed; }
+        .role-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 4px 14px;
+            border-radius: 20px;
+            font-size: 0.82rem;
+            font-weight: 700;
+            margin-bottom: 18px;
+        }
+        .role-patient {
+            background: rgba(0, 255, 204, 0.1);
+            color: var(--secondary-neon);
+            border: 1px solid var(--secondary-neon);
+        }
+        .role-doctor {
+            background: rgba(66, 153, 225, 0.1);
+            color: var(--accent-blue);
+            border: 1px solid var(--accent-blue);
+        }
+        .error-card {
+            background: rgba(255, 0, 0, 0.05);
+            border: 1px solid #fc8181;
+            color: #fc8181;
+            padding: 14px;
+            border-radius: 10px;
+            margin-top: 20px;
+            font-size: 0.9rem;
+        }
+        .patient-name-input {
+            width: 100%;
+            padding: 12px;
+            background: rgba(2, 6, 15, 0.5);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: #fff;
+            border-radius: 8px;
+            outline: none;
+            font-size: 0.95rem;
+            box-sizing: border-box;
+            margin-top: 5px;
+        }
+        .patient-name-input:focus {
+            border-color: var(--accent-blue);
+        }
+    </style>
 </head>
 <body>
 
+    <div class="glass-container" id="diagForm" style="max-width: 650px; margin: 40px auto;">
 
+        <h1>مشخّص التحاليل</h1>
+        <p style="color: #a0aec0; margin-bottom: 20px;">اختر نوع الفحص وأدخل البيانات المطلوبة للحصول على التشخيص.</p>
 
+        <!-- Role Badge -->
+        <div id="roleBadge" class="role-badge role-patient">
+            <span>🟢</span>
+            <span id="roleLabel">مريض</span>
+        </div>
 
+        <!-- Patient Name (للطبيب فقط - بيتحط هنا ديناميكياً) -->
+        <div id="patientNameContainer" class="hidden-section" style="margin-bottom: 20px;">
+            <label style="display:block; font-weight:700; margin-bottom:8px; color:#a0aec0;">
+                👤 اسم المريض (للطبيب فقط)
+            </label>
+            <input 
+                type="text" 
+                id="patientNameNote" 
+                class="patient-name-input"
+                placeholder="مثال: أحمد محمد علي"
+            >
+        </div>
 
+        <!-- Model Selector -->
+        <div class="form-group" style="margin-bottom: 20px;">
+            <label style="display:block; font-weight:700; margin-bottom:8px;">نوع الموديل والفحص المستهدف:</label>
+            <select id="modelSelect" onchange="toggleInputs()">
+                <option value="diabetes">1- تحليل مرض السكر (Diabetes Model)</option>
+                <option value="ckd">2- تحليل مرض الكلى (CKD Model)</option>
+            </select>
+        </div>
 
-    <div class="glass-container" style="max-width: 600px;">
-        <h1>🩺 مدقق الأعراض الذكي</h1>
-        <p>أدخل أعراضك للحصول على احتمالات التشخيص.</p>
-        
-        <form id="diagForm" style="margin-top: 20px;">
-            <textarea id="symptoms" placeholder="مثال: صداع شديد، دوار، غثيان..." rows="4"></textarea>
-            <button type="button" class="btn" style="width: 100%; margin-top: 20px;" onclick="analyze()">تحليل الأعراض</button>
-        </form>
+        <!-- Diabetes Inputs -->
+        <div id="diabetesInputs" class="dynamic-inputs">
+            <div style="grid-column: span 2;">
+                <p class="section-title">بيانات نموذج السكري</p>
+            </div>
+            <div>
+                <label>الجنس (Gender)</label>
+                <select id="diab_gender">
+                    <option value="Male">Male</option>
+                    <option value="Female">Female</option>
+                </select>
+            </div>
+            <div>
+                <label>العمر بالسنوات (Age)</label>
+                <input type="number" id="diab_age" placeholder="مثال: 45">
+            </div>
+            <div>
+                <label>ضغط الدم المرتفع (Hypertension)</label>
+                <select id="diab_hypertension">
+                    <option value="0">لا يوجد (0)</option>
+                    <option value="1">يوجد (1)</option>
+                </select>
+            </div>
+            <div>
+                <label>أمراض القلب (Heart Disease)</label>
+                <select id="diab_heart_disease">
+                    <option value="0">لا يوجد (0)</option>
+                    <option value="1">يوجد (1)</option>
+                </select>
+            </div>
+            <div>
+                <label>تاريخ التدخين (Smoking History)</label>
+                <select id="diab_smoking">
+                    <option value="never">never</option>
+                    <option value="current">current</option>
+                    <option value="former">former</option>
+                    <option value="No Info">No Info</option>
+                </select>
+            </div>
+            <div>
+                <label>مؤشر كتلة الجسم (BMI)</label>
+                <input type="number" id="diab_bmi" step="0.1" placeholder="مثال: 27.3">
+            </div>
+            <div>
+                <label>مستوى السكر التراكمي (HbA1c)</label>
+                <input type="number" id="diab_hba1c" step="0.1" placeholder="مثال: 5.7">
+            </div>
+            <div>
+                <label>السكر العشوائي (Blood Glucose)</label>
+                <input type="number" id="diab_glucose" placeholder="مثال: 130">
+            </div>
+        </div>
 
-        <div id="diagResult" style="margin-top: 20px; color: var(--secondary-neon);"></div>
+        <!-- CKD Inputs -->
+        <div id="ckdInputs" class="dynamic-inputs hidden-section">
+            <div style="grid-column: span 2;">
+                <p class="section-title">بيانات نموذج أمراض الكلى المزمنة</p>
+            </div>
+            <div>
+                <label>معدل الترشيح الكبيبي (GFR)</label>
+                <input type="number" id="ckd_gfr" step="0.1" placeholder="مثال: 90.0">
+            </div>
+            <div>
+                <label>مستويات المكمل الكيميائي (C3/C4)</label>
+                <input type="number" id="ckd_c3_c4" step="0.1" placeholder="مثال: 1.2">
+            </div>
+            <div>
+                <label>نيتروجين يوريا الدم (BUN)</label>
+                <input type="number" id="ckd_bun" step="0.1" placeholder="مثال: 15.0">
+            </div>
+            <div>
+                <label>ضغط الدم الانقباضي (Blood Pressure)</label>
+                <input type="number" id="ckd_bp" placeholder="مثال: 120">
+            </div>
+            <div>
+                <label>كراتينين المصل (Serum Creatinine)</label>
+                <input type="number" id="ckd_sc" step="0.1" placeholder="مثال: 1.0">
+            </div>
+            <div>
+                <label>درجة حموضة البول (Urine pH)</label>
+                <input type="number" id="ckd_ph" step="0.1" placeholder="مثال: 6.0">
+            </div>
+            <div>
+                <label>مدة الأعراض بالشهور (Months)</label>
+                <input type="number" id="ckd_months" step="0.1" placeholder="مثال: 6.0">
+            </div>
+            <div>
+                <label>مستويات الأوكسالات (Oxalate)</label>
+                <input type="number" id="ckd_oxalate" step="0.1" placeholder="مثال: 20.0">
+            </div>
+            <div>
+                <label>مستوى التوتر النفسي (Stress Level)</label>
+                <select id="ckd_stress">
+                    <option value="Low">Low</option>
+                    <option value="Medium">Medium</option>
+                    <option value="High">High</option>
+                </select>
+            </div>
+            <div>
+                <label>التاريخ العائلي للمرض (Family History)</label>
+                <select id="ckd_family">
+                    <option value="No">No</option>
+                    <option value="Yes">Yes</option>
+                </select>
+            </div>
+        </div>
+
+        <button type="button" class="btn" style="width: 100%; margin-top: 25px;" onclick="analyze()">
+            🔬 بدأ الفحص السريري الحسابي
+        </button>
+
+        <div id="diagResult"></div>
+
     </div>
 
-    <div class="back-home-wrapper">
-        <a href="dashboard.html" class="back-home-btn"><span>🏠</span> الرجوع للرئيسية</a>
-    </div>
+    
 
     <script>
-        function analyze() {
-            const symptoms = document.getElementById('symptoms').value;
-            if(!symptoms) return alert("من فضلك أدخل الأعراض أولاً");
-            document.getElementById('diagResult').innerHTML = "التحليل: بناءً على قاعدة البيانات، يُنصح باستشارة طبيب متخصص بخصوص هذه الأعراض.";
+        const role  = localStorage.getItem('role')  || 'patient';
+        const token = localStorage.getItem('token') || '';
+
+        // ── Role Badge ──
+        const roleBadge = document.getElementById('roleBadge');
+        const roleLabel = document.getElementById('roleLabel');
+        if (role === 'doctor') {
+            roleBadge.className = 'role-badge role-doctor';
+            roleLabel.textContent = 'طبيب';
+            // إظهار حقل اسم المريض للطبيب فقط
+            document.getElementById('patientNameContainer').classList.remove('hidden-section');
+        }
+
+        // ── تبديل الـ inputs ──
+        function toggleInputs() {
+            const model = document.getElementById('modelSelect').value;
+            document.getElementById('diabetesInputs').classList.toggle('hidden-section', model !== 'diabetes');
+            document.getElementById('ckdInputs').classList.toggle('hidden-section', model !== 'ckd');
+            document.getElementById('diagResult').innerHTML = '';
+        }
+
+        // ── الـ analyze الرئيسي ──
+        async function analyze() {
+            if (!token) {
+                document.getElementById('diagResult').innerHTML =
+                    '<div class="error-card">❌ يجب تسجيل الدخول أولاً.</div>';
+                return;
+            }
+
+            // جلب اسم المريض لو دكتور
+            const patientNameNote = role === 'doctor'
+                ? (document.getElementById('patientNameNote')?.value.trim() || null)
+                : null;
+
+            if (role === 'doctor' && !patientNameNote) {
+                document.getElementById('diagResult').innerHTML =
+                    '<div class="error-card">⚠️ من فضلك أدخل اسم المريض أولاً.</div>';
+                return;
+            }
+
+            const model = document.getElementById('modelSelect').value;
+            let url = '', payload = {};
+
+            if (model === 'diabetes') {
+                url = 'http://127.0.0.1:8000/Diabetes/predict';
+                payload = {
+                    gender:              document.getElementById('diab_gender').value,
+                    age:                 parseFloat(document.getElementById('diab_age').value),
+                    hypertension:        parseInt(document.getElementById('diab_hypertension').value),
+                    heart_disease:       parseInt(document.getElementById('diab_heart_disease').value),
+                    smoking_history:     document.getElementById('diab_smoking').value,
+                    bmi:                 parseFloat(document.getElementById('diab_bmi').value),
+                    HbA1c_level:         parseFloat(document.getElementById('diab_hba1c').value),
+                    blood_glucose_level: parseFloat(document.getElementById('diab_glucose').value),
+                    patient_name_note:   patientNameNote
+                };
+                if (isNaN(payload.age) || isNaN(payload.bmi) || isNaN(payload.HbA1c_level) || isNaN(payload.blood_glucose_level)) {
+                    document.getElementById('diagResult').innerHTML =
+                        '<div class="error-card">⚠️ من فضلك أكمل إدخال كافة بيانات السكري أولاً.</div>';
+                    return;
+                }
+
+            } else {
+                url = 'http://127.0.0.1:8000/CKD/predict';
+                payload = {
+                    gfr:              parseFloat(document.getElementById('ckd_gfr').value),
+                    c3_c4:            parseFloat(document.getElementById('ckd_c3_c4').value),
+                    bun:              parseFloat(document.getElementById('ckd_bun').value),
+                    blood_pressure:   parseFloat(document.getElementById('ckd_bp').value),
+                    serum_creatinine: parseFloat(document.getElementById('ckd_sc').value),
+                    urine_ph:         parseFloat(document.getElementById('ckd_ph').value),
+                    months:           parseFloat(document.getElementById('ckd_months').value),
+                    oxalate_levels:   parseFloat(document.getElementById('ckd_oxalate').value),
+                    stress_level:     document.getElementById('ckd_stress').value,
+                    family_history:   document.getElementById('ckd_family').value,
+                    patient_name_note: patientNameNote
+                };
+                if (isNaN(payload.gfr) || isNaN(payload.bun) || isNaN(payload.blood_pressure) || isNaN(payload.serum_creatinine)) {
+                    document.getElementById('diagResult').innerHTML =
+                        '<div class="error-card">⚠️ من فضلك أكمل إدخال كافة تحاليل الكلى أولاً.</div>';
+                    return;
+                }
+            }
+
+            document.getElementById('diagResult').innerHTML =
+                '<div class="result-card" style="text-align:center; color:#a0aec0;">🔄 جاري معالجة البيانات...</div>';
+
+            try {
+                const response = await fetch(url, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify(payload)
+                });
+
+                if (!response.ok) {
+                    const err = await response.json();
+                    throw new Error(err.detail || 'فشل الاتصال بالخادم');
+                }
+
+                const result = await response.json();
+                renderResult(result, model);
+
+            } catch (error) {
+                document.getElementById('diagResult').innerHTML =
+                    `<div class="error-card">❌ خطأ: ${error.message}</div>`;
+            }
+        }
+
+        // ── عرض النتيجة ──
+        function renderResult(result, model) {
+            let html = '<div class="result-card">';
+            html += '<p style="font-size:1rem; font-weight:700; color:var(--secondary-neon); margin-bottom:12px;">📊 نتيجة الفحص السريري</p>';
+
+            if (model === 'diabetes') {
+                const isPos     = result.diabetes_prediction === 1;
+                const diagText  = isPos ? '⚠️ توجد مؤشرات محتملة للإصابة بالسكري' : '✅ المؤشرات طبيعية ولا توجد إصابة';
+                const diagColor = isPos ? '#f6ad55' : '#68d391';
+                html += `<div class="result-row"><span>التشخيص المقترح</span><span style="color:${diagColor}; font-weight:700;">${diagText}</span></div>`;
+                html += `<div class="result-row"><span>نسبة ثقة الموديل</span><span style="font-weight:700;">${result.probability}%</span></div>`;
+                html += `<div class="result-row" style="font-size:0.8rem; color:#a0aec0;"><span colspan="2">⚠️ هذا التشخيص استرشادي فقط ولا يغني عن مراجعة الطبيب المختص</span></div>`;
+            } else {
+                html += `<div class="result-row"><span>المرحلة المتوقعة للمرض</span><span style="font-weight:700; color:#f6ad55;">Stage ${result.predicted_stage}</span></div>`;
+                html += `<div class="result-row"><span>دقة التنبؤ للمرحلة</span><span style="font-weight:700;">${result.confidence_score}%</span></div>`;
+                html += `<div class="result-row" style="font-size:0.8rem; color:#a0aec0;"><span>⚠️ يُنصح بمراجعة طبيب الكلى لتأكيد النتيجة</span></div>`;
+            }
+
+            html += `<div class="result-row"><span>الحالة</span><span style="color:#68d391; font-size:0.85rem;">${result.status}</span></div>`;
+            html += '</div>';
+
+            // ── correction box للطبيب فقط ──
+            if (result.can_correct && role === 'doctor') {
+                const placeholder = model === 'ckd'
+                    ? 'المرحلة الصحيحة (مثال: Stage 2)'
+                    : 'النتيجة الصحيحة (مصاب أو سليم)';
+
+                html += `
+                <div class="correction-box">
+                    <p class="correction-title">✏️ تصحيح التوقع (للطبيب فقط)</p>
+                    <p style="font-size:0.85rem; color:#a0aec0; margin-bottom:12px;">
+                        لو التوقع غير دقيق، أدخل النتيجة الصحيحة لتحسين الموديل لاحقاً
+                    </p>
+                    <div class="correction-input-row">
+                        <input 
+                            type="text" 
+                            id="correctionInput"
+                            placeholder="${placeholder}"
+                            style="flex:4; padding:12px 14px; font-size:1rem;
+                                   background:rgba(2,6,15,0.5); border:1px solid rgba(255,255,255,0.1);
+                                   color:#fff; border-radius:8px; outline:none;"
+                        >
+                        <button 
+                            class="btn-correct-large" 
+                            id="correctBtn"
+                            onclick="correctPrediction(${result.prediction_id})"
+                            style="flex:1;"
+                        >
+                            ✔ تأكيد
+                        </button>
+                    </div>
+                    <p id="correctionStatus" style="display:none; color:#68d391; font-size:0.85rem; margin-top:10px;">
+                        ✅ تم التصحيح بنجاح وحفظه في قاعدة البيانات
+                    </p>
+                </div>`;
+            }
+
+            document.getElementById('diagResult').innerHTML = html;
+        }
+
+        // ── إرسال التصحيح للـ API ──
+        async function correctPrediction(predictionId) {
+            const correctedResult = document.getElementById('correctionInput').value.trim();
+            if (!correctedResult) {
+                alert('من فضلك أدخل النتيجة الصحيحة أولاً');
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append('corrected_result', correctedResult);
+
+            try {
+                const response = await fetch(`http://127.0.0.1:8000/correction/${predictionId}`, {
+                    method: 'PUT',
+                    headers: { 'Authorization': `Bearer ${token}` },
+                    body: formData
+                });
+
+                if (!response.ok) {
+                    const err = await response.json();
+                    throw new Error(err.detail || 'فشل التصحيح');
+                }
+
+                document.getElementById('correctionStatus').style.display = 'block';
+                document.getElementById('correctionInput').disabled = true;
+                document.getElementById('correctBtn').disabled = true;
+
+            } catch (e) {
+                alert('❌ خطأ أثناء التصحيح: ' + e.message);
+            }
         }
     </script>
 </body>

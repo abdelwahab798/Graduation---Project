@@ -1,84 +1,157 @@
-const BACKEND_BASE_URL = "http://127.0.0.1:8000";
+document.addEventListener("DOMContentLoaded", () => {
 
-const fileInput = document.getElementById('fileInput');
-const fileName = document.getElementById('fileName');
-const uploadBtn = document.getElementById('uploadBtn');
-const modelSelect = document.getElementById('modelSelect');
-const loading = document.getElementById('loading');
-const originalPreview = document.getElementById('originalPreview');
-const resultOutput = document.getElementById('resultOutput');
-const gradcamContainer = document.getElementById('gradcamContainer');
-const gradcamImg = document.getElementById('gradcamImg');
+    const fileInput = document.getElementById("fileInput");
+    const fileNameDiv = document.getElementById("fileName");
+    const uploadBtn = document.getElementById("uploadBtn");
+    const modelSelect = document.getElementById("modelSelect");
 
-fileInput.addEventListener('change', function() {
-    if (this.files && this.files[0]) {
-        const file = this.files[0];
-        fileName.textContent = file.name;
-        const reader = new FileReader();
-        reader.onload = function(e) {
-            originalPreview.innerHTML = `<img src="${e.target.result}" style="width:100%; max-height:400px; object-fit:contain; border-radius:5px;">`;
-        }
-        reader.readAsDataURL(file);
-    }
-});
+    const loadingDiv = document.getElementById("loading");
 
-uploadBtn.addEventListener('click', async () => {
-    const file = fileInput.files[0];
-    if (!file) {
-        alert("من فضلك اختر صورة أشعة أولاً");
+    const originalPreview = document.getElementById("originalPreview");
+    const resultOutput = document.getElementById("resultOutput");
+
+    const gradcamContainer = document.getElementById("gradcamContainer");
+    const gradcamImg = document.getElementById("gradcamImg");
+
+    const patientInputContainer = document.getElementById("patientInputContainer");
+
+    // 🔥 correction
+    const correctionPanel = document.getElementById("correctionPanel");
+    const predictionIdInput = document.getElementById("predictionIdInput");
+    const correctedResultInput = document.getElementById("correctedResultInput");
+    const submitCorrectionBtn = document.getElementById("submitCorrectionBtn");
+
+    const BASE_URL = "http://127.0.0.1:8000";
+
+    const token = (localStorage.getItem("token") || "").replace(/^["']|["']$/g, '');
+    const userRole = (localStorage.getItem("role") || "").replace(/^["']|["']$/g, '').toLowerCase();
+
+    if (!token) {
+        alert("Login required");
+        window.location.href = "login.html";
         return;
     }
 
-    const formData = new FormData();
-    formData.append("file", file);
+    if (userRole === 'doctor') {
+        patientInputContainer.innerHTML = `
+            <input type="text" id="patientNameInput" placeholder="Patient Name">
+        `;
+    }
+     // بعد
+const roleBadge = document.getElementById('roleBadge');
+const roleLabel = document.getElementById('roleLabel');
+if (userRole === 'doctor') {
+    roleBadge.className = 'role-badge role-doctor';
+    roleLabel.innerHTML = ' طبيب';
+} else {
+    roleBadge.className = 'role-badge role-patient';
+    roleLabel.innerHTML = ' مريض';
+}
 
-    loading.style.display = "block";
-    resultOutput.innerHTML = `<p style="color:#666;">جاري التحليل الحسابي...</p>`;
-    gradcamContainer.style.display = "none";
 
-    const targetEndpoint = modelSelect.value;
-    const fullUrl = `${BACKEND_BASE_URL}${targetEndpoint}`;
+    fileInput.addEventListener("change", (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
 
-    try {
-        const response = await fetch(fullUrl, {
-            method: "POST",
-            body: formData
-        });
+        fileNameDiv.textContent = file.name;
 
-        if (response.ok) {
+        const reader = new FileReader();
+        reader.onload = (event) => {
+            originalPreview.innerHTML = `<img src="${event.target.result}">`;
+        };
+        reader.readAsDataURL(file);
+    });
+
+    uploadBtn.addEventListener("click", async () => {
+
+        const file = fileInput.files[0];
+        if (!file) return alert("Select file first");
+
+        const formData = new FormData();
+        formData.append("file", file);
+
+        if (userRole === "doctor") {
+            const name = document.getElementById("patientNameInput").value;
+            if (!name) return alert("Enter patient name");
+            formData.append("patient_name", name);
+        }
+
+        loadingDiv.style.display = "block";
+        correctionPanel.style.display = "none";
+
+        try {
+
+            const response = await fetch(`${BASE_URL}${modelSelect.value}`, {
+                method: "POST",
+                headers: {
+                    "Authorization": `Bearer ${token}`
+                },
+                body: formData
+            });
+
             const data = await response.json();
-            
-            loading.style.display = "none";
 
-            let probabilitiesHtml = '';
-            if (data.all_probabilities) {
-                probabilitiesHtml = `<div style="margin-top:10px; font-size:0.95rem; color:#555;">`;
-                for (const [key, value] of Object.entries(data.all_probabilities)) {
-                    probabilitiesHtml += `<p>• ${key}: <strong>${(value * 100).toFixed(2)}%</strong></p>`;
-                }
-                probabilitiesHtml += `</div>`;
-            }
+            if (!response.ok) throw new Error(data.detail || "Error");
+
+            loadingDiv.style.display = "none";
 
             resultOutput.innerHTML = `
-                <p>اسم الملف: <strong>${data.filename}</strong></p>
-                <p>التشخيص : <span class="badge-success">${data.prediction}</span></p>
-                <p>نسبة التأكيد الكلية: <strong>${(data.confidence * 100).toFixed(2)}%</strong></p>
-                ${probabilitiesHtml}
+                <p><b>Prediction:</b> ${data.prediction}</p>
+                <p><b>Confidence:</b> ${data.confidence}</p>
+                <p><b>ID:</b> ${data.prediction_id}</p>
             `;
 
+            // gradcam
             if (data.gradcam_image) {
                 gradcamImg.src = data.gradcam_image;
                 gradcamContainer.style.display = "block";
             }
 
-        } else {
-            const errorData = await response.json();
-            throw new Error(errorData.detail || "حدث خطأ غير معروف في السيرفر.");
+            // 🔥 show correction for doctor
+            if (userRole === "doctor") {
+                correctionPanel.style.display = "block";
+                predictionIdInput.value = data.prediction_id || "";
+            }
+
+        } catch (err) {
+            loadingDiv.style.display = "none";
+            resultOutput.innerHTML = `<p style="color:red;">${err.message}</p>`;
+        }
+    });
+
+    // 🔥 correction submit
+    submitCorrectionBtn.addEventListener("click", async () => {
+
+        const id = predictionIdInput.value;
+        const corrected = correctedResultInput.value;
+
+        if (!id || !corrected) {
+            return alert("Fill all fields");
         }
 
-    } catch (error) {
-        loading.style.display = "none";
-        resultOutput.innerHTML = `<p style="color: red; font-weight: bold;"> خطأ أثناء الفحص: ${error.message}</p>`;
-        console.error(error);
-    }
+        try {
+
+            const formData = new FormData();
+            formData.append("corrected_result", corrected);
+
+            const res = await fetch(`${BASE_URL}/correction/${id}`, {
+                method: "PUT",
+                headers: {
+                    "Authorization": `Bearer ${token}`
+                },
+                body: formData
+            });
+
+            const data = await res.json();
+
+            if (!res.ok) throw new Error(data.detail || "Failed");
+
+            alert("Correction saved ✅");
+            correctedResultInput.value = "";
+
+        } catch (e) {
+            alert(e.message);
+        }
+    });
+
 });

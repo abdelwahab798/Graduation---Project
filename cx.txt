@@ -24,3 +24,6 @@ Licence: CC BY 4.0
 
 Reference: https://www.cell.com/cell/fulltext/S0092-8674(18)30154-5
 
+rag 
+https://huggingface.co/datasets/Ahmed-Selem/Shifaa_Arabic_Medical_Consultations
+
