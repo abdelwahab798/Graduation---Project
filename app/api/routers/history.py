@@ -16,9 +16,7 @@ async def get_dashboard_history(
     db: Session = Depends(get_db),
     current_user: models_db.User = Depends(get_current_user)
 ):
-    """
-    جلب السجل الطبي الشامل (أشعة + تحاليل كلى + سكر) بناءً على صلاحية المستخدم
-    """
+    
     try:
         if current_user.role == "patient":
             if not current_user.patient_profile:
@@ -46,7 +44,6 @@ async def get_dashboard_history(
             "status": "success",
             "records": {
 
-                # ── أشعة ──────────────────────────────────────────────────────────
                 "xray_examinations": [
                     {
                         "exam_id":       x.exam_id,
@@ -62,7 +59,6 @@ async def get_dashboard_history(
                     } for x in xrays
                 ],
 
-                # ── CKD ───────────────────────────────────────────────────────────
                 "ckd_records": [
                     {
                         "record_id":        c.record_id,
@@ -72,7 +68,6 @@ async def get_dashboard_history(
                         "actual_result":    c.predictions[0].actual_result     if c.predictions else None,
                         "prediction_id":    c.predictions[0].prediction_id     if c.predictions else None,
                         "confidence":       c.predictions[0].confidence_score  if c.predictions else None,
-                        # ── القيم المخبرية ──
                         "gfr":              c.gfr,
                         "serum_creatinine": c.serum_creatinine,
                         "bun":              c.bun,
@@ -86,7 +81,6 @@ async def get_dashboard_history(
                     } for c in ckd
                 ],
 
-                # ── Diabetes ──────────────────────────────────────────────────────
                 "diabetes_records": [
                     {
                         "record_id":          d.record_id,
@@ -96,8 +90,6 @@ async def get_dashboard_history(
                         "actual_result":      d.predictions[0].actual_result     if d.predictions else None,
                         "prediction_id":      d.predictions[0].prediction_id     if d.predictions else None,
                         "confidence":         d.predictions[0].confidence_score  if d.predictions else None,
-                        # ── البيانات الصحية ──
-                        # gender & age: من Patient profile لو مريض، أو None لو دكتور (مش موجودة في DiabetesData)
                         "gender":             patient_gender,
                         "age":                patient_age,
                         "hypertension":       d.hypertension,

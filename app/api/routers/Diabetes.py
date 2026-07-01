@@ -36,7 +36,6 @@ def predict_diabetes(
     if lite_pipeline is None:
         raise HTTPException(status_code=500, detail="Diabetes model pipeline is not loaded.")
 
-    # تحديد patient_id و doctor_id
     patient_id = None
     doctor_id = None
 

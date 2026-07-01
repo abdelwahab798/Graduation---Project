@@ -3,7 +3,6 @@ from sqlalchemy import Column, Integer, String, Float, ForeignKey, DateTime
 from sqlalchemy.orm import relationship
 from .config import Base
 
-# 1. جدول المستخدمين العام
 class User(Base):
     __tablename__ = "users"
     
@@ -15,10 +14,8 @@ class User(Base):
     role = Column(String, default="patient", nullable=False) 
     created_at = Column(DateTime, default=datetime.datetime.utcnow)
     
-    # العلاقات
     patient_profile = relationship("Patient", back_populates="user", uselist=False, cascade="all, delete")
     
-    # الإصلاح هنا: أضفنا foreign_keys صراحة لفك الالتباس عن SQLAlchemy
     corrected_predictions = relationship(
         "Prediction", 
         back_populates="doctor",
@@ -26,7 +23,6 @@ class User(Base):
     )
 
 
-# 2. الملف الطبي للمستخدم (يُنشأ فقط إذا كان المستخدم مريضًا "patient")
 class Patient(Base):
     __tablename__ = "patients"
     
@@ -34,7 +30,7 @@ class Patient(Base):
     user_id = Column(Integer, ForeignKey("users.user_id", ondelete="CASCADE"), unique=True)
     
     age = Column(Float, nullable=False) 
-    gender = Column(String, nullable=False) # Male / Female
+    gender = Column(String, nullable=False) 
     created_at = Column(DateTime, default=datetime.datetime.utcnow)
     
     user = relationship("User", back_populates="patient_profile")
@@ -49,27 +45,22 @@ class ImageExamination(Base):
     
     exam_id = Column(Integer, primary_key=True, index=True)
     
-    # مريض حقيقي (لو اللي داخل مريض)
     patient_id = Column(Integer, ForeignKey("patients.patient_id", ondelete="CASCADE"), nullable=True)
     
-    # الحقل السحري الجديد: معرف الطبيب الذي قام بالفحص (لو اللي داخل دكتور)
     doctor_id = Column(Integer, ForeignKey("users.user_id", ondelete="SET NULL"), nullable=True)
     
-    # اسم المريض التذكيري (في حالة فحص الطبيب)
     patient_name_note = Column(String, nullable=True)
     
-    modality = Column(String) # X-Ray, MRI, CT, Retinopathy_Image
+    modality = Column(String) 
     image_path = Column(String, nullable=False) 
     exam_date = Column(DateTime, default=datetime.datetime.utcnow)
     
-    # العلاقات
+   
     patient = relationship("Patient", back_populates="images")
     predictions = relationship("Prediction", back_populates="image_exam")
-    # علاقة مع جدول المستخدمين لنعرف الدكتور
     doctor = relationship("User", foreign_keys=[doctor_id])
 
 
-# 4. جدول بيانات الـ CKD (ML)
 class CKDData(Base):
     __tablename__ = "ckd_data"
     
@@ -94,7 +85,6 @@ class CKDData(Base):
     predictions = relationship("Prediction", back_populates="ckd_record")
 
 
-# 5. جدول بيانات الـ Diabetes (ML)
 class DiabetesData(Base):
     __tablename__ = "diabetes_data"
     
@@ -115,7 +105,6 @@ class DiabetesData(Base):
     predictions = relationship("Prediction", back_populates="diabetes_record")
 
 
-# 6. جدول التنبؤات والـ MLOps Tracking
 class Prediction(Base):
     __tablename__ = "predictions"
     
@@ -133,7 +122,6 @@ class Prediction(Base):
     confidence_score = Column(Float, nullable=True)    
     gradcam_path = Column(String, nullable=True) 
     
-    # الـ Feedback Loop الخاص بالـ MLOps (تصحيح النتيجة لاحقاً)
     actual_result = Column(String, default=None) 
     corrected_by_doctor_id = Column(Integer, ForeignKey("users.user_id", ondelete="SET NULL"), nullable=True)
     
@@ -144,6 +132,5 @@ class Prediction(Base):
     ckd_record = relationship("CKDData", back_populates="predictions")
     diabetes_record = relationship("DiabetesData", back_populates="predictions")
     
-    # للتفريق بين الطبيب الذي قام بالفحص أول مرة، والطبيب الذي صحح النتيجة
     exam_doctor = relationship("User", foreign_keys=[doctor_id])
     doctor = relationship("User", foreign_keys=[corrected_by_doctor_id], back_populates="corrected_predictions")

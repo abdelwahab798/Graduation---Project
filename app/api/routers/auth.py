@@ -24,7 +24,6 @@ oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/auth/login")
 
 router = APIRouter(prefix="/api/auth", tags=["Authentication"])
 
-# --- Pydantic Schemas ---
 
 class UserRegister(BaseModel):
     username: str
@@ -33,7 +32,7 @@ class UserRegister(BaseModel):
     full_name: str = None
     role: str = Field(..., description="يجب أن يكون إما 'patient' أو 'doctor'")
     
-    # جعل السن والجنس Optional لأن الطبيب لن يحتاج لإدخالهم
+    
     age: Optional[float] = None
     gender: Optional[str] = None
 
@@ -42,7 +41,6 @@ class Token(BaseModel):
     token_type: str
 
 
-# --- Helper Functions ---
 
 def hash_password(password: str) -> str:
     password_bytes = password.encode('utf-8')
@@ -84,10 +82,9 @@ def get_current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(
     return user
 
 
-# --- Dependency for Role Validation ---
 
 def verify_is_doctor(current_user: models.User = Depends(get_current_user)):
-    """ حماية للـ Endpoints الحساسة (مثل تعديل الـ actual_result) """
+   
     if current_user.role != "doctor":
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
@@ -96,12 +93,11 @@ def verify_is_doctor(current_user: models.User = Depends(get_current_user)):
     return current_user
 
 
-# --- Endpoints ---
 
-# 1. التسجيل الذكي (يفرق تلقائياً بين الطبيب والمريض)
+
+# 1. التسجيل الذكي 
 @router.post("/signup", status_code=status.HTTP_201_CREATED)
 def signup(user_data: UserRegister, db: Session = Depends(get_db)):
-    # التأكد من صحة الـ Role المرسل
     if user_data.role not in ["patient", "doctor"]:
         raise HTTPException(status_code=400, detail="الـ Role يجب أن يكون إما 'patient' أو 'doctor'")
         
@@ -112,7 +108,7 @@ def signup(user_data: UserRegister, db: Session = Depends(get_db)):
         raise HTTPException(status_code=400, detail="Username or Email already registered")
     
     try:
-        # أ. إنشاء الحساب الموحد في جدول الـ User
+       
         new_user = models.User(
             username=user_data.username,
             email=user_data.email,
@@ -121,9 +117,9 @@ def signup(user_data: UserRegister, db: Session = Depends(get_db)):
             role=user_data.role
         )
         db.add(new_user)
-        db.flush()  # توليد الـ user_id في الذاكرة
+        db.flush() 
         
-        # ب. لو المستخدم مريض (Patient)، نقوم بإنشاء ملف طبي له إجبارياً
+      
         if user_data.role == "patient":
             if user_data.age is None or user_data.gender is None:
                 raise HTTPException(
@@ -138,7 +134,6 @@ def signup(user_data: UserRegister, db: Session = Depends(get_db)):
             )
             db.add(new_patient)
         
-        # ج. حفظ التغييرات النهائية (Transaction)
         db.commit()
         return {"message": f"Account successfully registered as {user_data.role}"}
         
@@ -153,7 +148,6 @@ def signup(user_data: UserRegister, db: Session = Depends(get_db)):
 # 2. تسجيل الدخول (حقن الـ Role جوه الـ JWT لراحة الـ Front-end)
 @router.post("/login", response_model=Token)
 def login(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get_db)):
-    # الكود يبحث عن الـ Email أو الـ Username بناءً على إدخال الـ form
     user = db.query(models.User).filter(
         (models.User.email == form_data.username) | (models.User.username == form_data.username)
     ).first()
@@ -161,7 +155,6 @@ def login(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depend
     if not user or not verify_password(form_data.password, user.hashed_password):
         raise HTTPException(status_code=400, detail="Incorrect username or password")
     
-    # 💡 التحديث الهام: بنحط الـ role و الـ user_id جوه الـ payload بتاع التوكن 
     access_token = create_access_token(
         data={
             "sub": user.username,

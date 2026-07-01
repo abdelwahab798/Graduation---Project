@@ -35,6 +35,7 @@ llm = ChatOpenAI(
 memory = ConversationBufferWindowMemory(k=3, memory_key="chat_history", input_key="Question")
 
 template = """أنت طبيب استشاري خبير ومتحدث لَبِق في نظام MediaScan-AI الطبي. وظيفتك هي الإجابة على أسئلة المرضى الطبية بناءً على السياق (Context) المرفق، وإذا لم يغطِّ السياق الحالة، أجب بناءً على معرفتك الطبية العامة كطبيب محترف.
+متجبش اسماء خالص
 
 شروط وإرشادات صارمة للصياغة (قواعد الإنتاج):
 1. يجب أن تكون الإجابة باللغة العربية الفصحى الطبية السليمة 100%. يمنع منعاً باتاً دمج مصطلحات إنجليزية داخل الكلمات العربية (مثل كتابة benign أو simple أو ablation وسط الجمل). إذا اضطررت لكتابة مصطلح طبي، اكتبه باللغة العربية واكتب المصطلح الإنجليزي كاملاً بين قوسين، مثل: ورم حميد (Benign tumor).
@@ -57,40 +58,35 @@ chat_chain = LLMChain(llm=llm, prompt=prompt, memory=memory)
 class QueryRequest(BaseModel):
     question: str
 
-# 3. الـ Endpoint لاستقبال طلبات الـ الشات من الفرونت إند
 @router.post("/ask")
 async def ask_doctor(request: QueryRequest):
     try:
         user_query = request.question
-        print(f" Received question: {user_query}") # للـ Debugging
+        print(f" Received question: {user_query}") 
         
-        # 1. تحويل سؤال المستخدم لـ Vector
         query_vector = embedding_model.encode(user_query).tolist()
         
-        # 2. البحث في Qdrant Cloud
         search_result = qdrant_client.query_points(
             collection_name=COLLECTION_NAME,
             query=query_vector,
             limit=2
             ).points
-        print(f"📡 Qdrant returned {len(search_result)} results.") # للـ Debugging
+        print(f"Qdrant returned {len(search_result)} results.") 
         
-        # 3. تجميع الـ Context بشكل آمن تماماً يمنع الـ Key Error
         context_list = []
         for hit in search_result:
             if hit.payload and 'text' in hit.payload:
                 context_list.append(str(hit.payload['text']))
             elif hit.payload:
-                # لو الاسم متخزن بشكل تاني (احتياطي)
                 context_list.append(str(list(hit.payload.values())[0]))
         
         context_text = "\n\n".join(context_list)
         
         if not context_text:
-            context_text = "لا يوجد سياق متاح."
-            print("⚠️ Warning: Context is empty!")
+            context_text = "لا يوجد سياق متاح"
+            print("Warning: Context is empty!")
 
-        # 4. تشغيل الـ Chain (تحويل المدخلات لـ String صريح لتفادي مشاكل لانج تشين)
+       
         response = chat_chain.run(
             Question=str(user_query), 
             context=str(context_text)
@@ -99,6 +95,6 @@ async def ask_doctor(request: QueryRequest):
         return {"answer": response}
         
     except Exception as e:
-        # السطر ده هيطبع لك الـ Error الحقيقي في الـ Terminal عندك عشان نعرفه فوراً
-        print(f"❌ CRITICAL ERROR IN RAG: {str(e)}")
+       
+        print(f"CRITICAL ERROR IN RAG: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Internal RAG Error: {str(e)}")

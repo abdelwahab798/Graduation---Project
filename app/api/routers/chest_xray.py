@@ -77,7 +77,7 @@ chest_preprocess = transforms.Compose([
 @router.post("/predict")
 async def predict_chest_xray(
     file: UploadFile = File(...),
-    patient_name: Optional[str] = Form(None), # 👈 استقبال اسم المريض النصي المرسل من الـ FormData
+    patient_name: Optional[str] = Form(None), 
     db: Session = Depends(get_db),
     current_user: models_db.User = Depends(get_current_user)
 ):
@@ -86,13 +86,12 @@ async def predict_chest_xray(
 
     target_patient_id = None
 
-    # ✅ تحديد الهوية بناءً على الصلاحية الحالية
     if current_user.role == "patient":
         if not current_user.patient_profile:
             raise HTTPException(status_code=400, detail="الملف الطبي للمريض غير مكتمل.")
         target_patient_id = current_user.patient_profile.patient_id
     else:
-        # لو دكتور، الـ target_patient_id هيفضل None لأنه مجرد اسم تذكيري مش مربوط بـ ID في الداتابيز
+        
         target_patient_id = None 
 
     try:
@@ -146,15 +145,13 @@ async def predict_chest_xray(
         base64_img = base64.b64encode(encoded_img.tobytes()).decode('utf-8')
         gradcam_base64_url = f"data:image/png;base64,{base64_img}"
 
-        # ✅ حفظ الصورة
         os.makedirs("static/uploads", exist_ok=True)
         rand_id = int(torch.randint(0, 10000, (1,)).item())
         saved_image_path = f"static/uploads/{current_user.user_id}_{rand_id}_{file.filename}"
         with open(saved_image_path, "wb") as f:
             f.write(image_data)
 
-        # ✅ حفظ سجل الفحص
-        # ملاحظة: إذا كان جدول ImageExamination لا يقبل patient_id كـ Null، تأكد من تعديل الـ Schema في الداتابيز لتسمح بـ Nullable=True
+        
         db_exam = models_db.ImageExamination(
             patient_id=target_patient_id,
             patient_name_note=patient_name, 
@@ -165,8 +162,7 @@ async def predict_chest_xray(
         db.add(db_exam)
         db.flush()
 
-        # ✅ حفظ التنبؤ
-        # تذكير: يمكنك إضافة حقل ملاحظات (مثل notes=patient_name) لتخزين الاسم التذكيري إذا أردت استرجاعه لاحقاً للـ Doctor التاريخ الخاص به
+       
         db_prediction = models_db.Prediction(
             patient_id=target_patient_id,
             exam_id=db_exam.exam_id,

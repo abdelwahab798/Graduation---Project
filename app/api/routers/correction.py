@@ -15,14 +15,12 @@ def correct_prediction(
     db: Session = Depends(get_db),
     current_user: models_db.User = Depends(get_current_user)
 ):
-    # 1. Only doctors allowed
     if current_user.role != "doctor":
         raise HTTPException(
             status_code=403,
             detail="Only doctors can correct predictions"
         )
 
-    # 2. Get prediction
     prediction = db.query(models_db.Prediction).filter(
         models_db.Prediction.prediction_id == prediction_id
     ).first()
@@ -33,7 +31,6 @@ def correct_prediction(
             detail="Prediction not found"
         )
 
-    # 3. Update correction
     prediction.actual_result = corrected_result
     prediction.corrected_by_doctor_id = current_user.user_id
 

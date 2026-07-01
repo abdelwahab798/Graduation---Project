@@ -13,7 +13,6 @@ from .auth import get_current_user
 
 router = APIRouter(prefix="/CKD", tags=["CKD_pipeline"])
 
-# load model
 try:
     lite_pipeline = joblib.load(
         r"D:\__Projects\Graduation---Project\app\models\ckd_stage_lite_pipeline.pkl"
@@ -23,7 +22,6 @@ except Exception as e:
     lite_pipeline = None
 
 
-# input schema
 class PatientData(BaseModel):
     patient_name_note: str | None = None
     gfr: float
@@ -47,7 +45,6 @@ def predict_ckd_stage(
     if lite_pipeline is None:
         raise HTTPException(status_code=500, detail="Model not loaded")
 
-    # تحديد patient_id و doctor_id
     patient_id = None
     doctor_id = None
 
@@ -65,8 +62,8 @@ def predict_ckd_stage(
         confidence = float(lite_pipeline.predict_proba(input_df)[0][prediction])
 
         db_record = models_db.CKDData(
-            patient_id=patient_id,  # None لو doctor
-            doctor_id=doctor_id,    # None لو patient
+            patient_id=patient_id,  
+            doctor_id=doctor_id,    
             gfr=data.gfr,
             c3_c4=data.c3_c4,
             bun=data.bun,
@@ -98,7 +95,7 @@ def predict_ckd_stage(
             "predicted_stage": prediction,
             "confidence_score": round(confidence * 100, 2),
             "status": "Success",
-            "can_correct": current_user.role == "doctor"  # ← الـ frontend يعرف يظهر الـ field ولا لأ
+            "can_correct": current_user.role == "doctor"  
         }
 
     except Exception as e:

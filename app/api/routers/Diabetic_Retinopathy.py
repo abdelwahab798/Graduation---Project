@@ -18,7 +18,6 @@ from sqlalchemy.orm import Session
 from typing import Optional
 import os
 
-# استيراد إعدادات قاعدة البيانات والـ Auth
 from Database.config import get_db
 import Database.models as models_db
 from .auth import get_current_user
@@ -31,7 +30,6 @@ router = APIRouter(
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 
-# 💡 عزل الـ Hooks داخل الـ model instance لمنع تداخل أبحاث المرضى (Thread-Safe)
 def register_state_hooks(model):
     model.gradients = None
     model.activations = None
@@ -47,7 +45,6 @@ def register_state_hooks(model):
 
 
 def load_retina_model():
-    # 💡 جعل المسار Relative ليتوافق مع الـ Docker والـ Production Environment
     path = os.path.join(
         "models",
         "resnet18_diabetic_retinopathy_binary.pth"
@@ -126,7 +123,6 @@ async def predict_and_return_gradcam(
         )
 
     else:
-        # الدكتور يقدر يرفع الفحص باسم فقط
         target_patient_id = None
 
     if not file.filename.lower().endswith(
@@ -150,7 +146,6 @@ async def predict_and_return_gradcam(
             .to(device)
         )
 
-        # الحسابات الأمامية والخلفية للموديل
         output = retina_model(input_tensor)
 
         _, preds = output.max(1)
@@ -188,7 +183,6 @@ async def predict_and_return_gradcam(
             dim=[0, 2, 3]
         )
 
-        # 💡 حساب الـ Heatmap بشكل تجميعي نظيف لتفادي الـ In-place modification Runtime Error
         heatmap = torch.zeros(
             current_acts.shape[2:],
             dtype=torch.float32,
@@ -256,10 +250,7 @@ async def predict_and_return_gradcam(
             f"data:image/png;base64,{base64_img}"
         )
 
-        # -------------------------------------------------------------
-        # 💾 حفظ الصورة وربطها بالـ Database
-        # -------------------------------------------------------------
-
+      
         os.makedirs(
             "static/uploads/eyes",
             exist_ok=True
