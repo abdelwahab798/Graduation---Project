@@ -1,16 +1,14 @@
-/* -------------------------------------------------------------
-   المشروع: MediScan-AI - النسخة الاحترافية الشاملة والنهائية المحدثة
-   ------------------------------------------------------------- */
+
 
 @import url('https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700&display=swap');
 
 :root {
-    --bg-base: #020617;         /* كحلي سيبراني عميق جداً */
+    --bg-base: #020617;     
     --glass-bg: rgba(7, 16, 36, 0.85);
     --glass-border: rgba(0, 255, 204, 0.1);
-    --neon-medical: #00ffcc;   /* الأخضر الطبي الفسفوري */
-    --accent-blue: #0088ff;    /* الأزرق الرقمي المشع */
-    --neon-danger: #ff3366;    /* الأحمر التكتيكي لزر العودة/الخروج */
+    --neon-medical: #00ffcc;  
+    --accent-blue: #0088ff;   
+    --neon-danger: #ff3366;   
     --text-primary: #ffffff;
     --text-secondary: #94a3b8;
 }
@@ -35,11 +33,11 @@ body {
     color: var(--text-primary) !important;
     overflow-x: hidden;
     position: relative;
-    padding: 50px 20px 120px 20px; /* حشو سفلي كافٍ لمنع تداخل المحتوى مع زر العودة الثابت */
+    padding: 50px 20px 120px 20px; 
     direction: rtl;
 }
 
-/* 🚀 خط النيون الطبي النبضي المتحرك في منتصف الخلفية (لكل الموقع) */
+
 body::before {
     content: '';
     position: absolute;
@@ -61,7 +59,6 @@ body::before {
     100% { left: 100%; opacity: 0.1; }
 }
 
-/* 🩺 تخصيص لوحة نبضات القلب الطبية لتظهر في الداش بورد فقط */
 #heartbeatCanvas {
     position: fixed;
     top: 0;
@@ -73,7 +70,6 @@ body::before {
     opacity: 0.18; 
 }
 
-/* 💎 الحاوية الزجاجية الرئيسية المحترفة */
 .glass-container, [class*="container"], main {
     background: var(--glass-bg) !important;
     backdrop-filter: blur(20px) !important;
@@ -91,7 +87,6 @@ body::before {
     align-items: center !important;
 }
 
-/* هيدر الترحيب والعناوين */
 .dashboard-header, header, .top-bar, .title-wrapper {
     width: 100%;
     text-align: center;
@@ -101,13 +96,12 @@ body::before {
     align-items: center;
 }
 
-/* 🎨 إصلاح العناوين لمنع اللون الأبيض المصمت وضمان التدرج الانسيابي */
 h1, h2 {
     font-size: 1.9rem !important;
     font-weight: 700 !important;
     background: linear-gradient(to left, #ffffff, var(--accent-blue)) !important;
     display: inline-block !important;
-    color: transparent !important; /* تم تعديلها هنا للإصلاح */
+    color: transparent !important; 
     background-clip: text !important;
     -webkit-background-clip: text !important;
     -webkit-text-fill-color: transparent !important;
@@ -119,7 +113,7 @@ p {
     font-size: 0.95rem !important; 
 }
 
-/* 🟢 شريط حالة النظام الذكي (System Status) */
+
 .status-bar, [class*="status"] {
     display: flex !important;
     align-items: center !important;
@@ -145,7 +139,6 @@ p {
     50% { opacity: 1; transform: scale(1.1); } 
 }
 
-/* 🚀 هندسة رص المربعات الأربعة (كل اثنين تحت بعض بالتساوي 2x2) */
 .grid, [class*="cards-wrapper"], [class*="container"] > div:nth-of-type(2) {
     display: grid !important;
     grid-template-columns: repeat(2, 1fr) !important; 
@@ -155,7 +148,6 @@ p {
     margin-bottom: 20px !important;
 }
 
-/* ستايل المربعات المطور ذو خاصية المسح الضوئي (Scan) */
 .card, [class*="card-item"] {
     background: rgba(255, 255, 255, 0.01) !important;
     border: 1px solid rgba(255, 255, 255, 0.03) !important;
@@ -173,7 +165,6 @@ p {
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
 }
 
-/* 🧬 تأثير خط المسح الضوئي الطبي اللامع عند الـ Hover */
 .card::after, [class*="card-item"]::after {
     content: '';
     position: absolute;
@@ -234,7 +225,6 @@ input, select, textarea {
 }
 input:focus { border-color: var(--accent-blue) !important; box-shadow: 0 0 15px rgba(0, 136, 255, 0.15) !important; }
 
-/* 🛠️ حل نهائي لمشكلة الخلفية البيضاء عند اختيار إيميل محفوظ (Autofill) */
 input:-webkit-autofill,
 input:-webkit-autofill:hover, 
 input:-webkit-autofill:focus, 
@@ -268,12 +258,10 @@ input:-webkit-autofill:focus {
     box-shadow: 0 8px 25px rgba(0, 136, 255, 0.5) !important;
 }
 
-/* 🛑 إلغاء أي خط تحت الروابط لمنع الـ Hyperlink المكسور */
 a, .links, .bottom-links {
     text-decoration: none !important;
 }
 
-/* ⚡ روابط إنشاء الحساب المضيئة سفلية التمركز */
 a[href*="signup"], a[href*="register"], a[href*="login"], .signup-link {
     display: block !important;
     width: fit-content !important;
@@ -291,7 +279,6 @@ a[href*="signup"]:hover, a[href*="register"]:hover {
     text-shadow: 0 0 8px var(--neon-medical) !important;
 }
 
-/* 🛠️ حل مشكلة مكان زر العودة (تثبيت كبسولي فخم أسفل منتصف الشاشة تماماً) */
 a[href*="dashboard"], 
 a[href*="index"], 
 a[href*="control"],
@@ -324,7 +311,6 @@ a[href*="logout"],
     text-shadow: 0 0 5px rgba(0, 255, 204, 0.3) !important;
 }
 
-/* تخصيص زر الخروج الفعلي باللون الأحمر التكتيكي المضيء */
 a[href*="logout"], .logout-btn {
     color: var(--neon-danger) !important;
     border-color: rgba(255, 51, 102, 0.4) !important;
@@ -332,7 +318,6 @@ a[href*="logout"], .logout-btn {
     text-shadow: 0 0 5px rgba(255, 51, 102, 0.3) !important;
 }
 
-/* تأثيرات الـ Hover المتوهجة لزر العودة */
 a[href*="dashboard"]:hover, 
 a[href*="index"]:hover, 
 a[href*="control"]:hover,
@@ -346,7 +331,6 @@ a[href*="control"]:hover,
     text-shadow: none !important;
 }
 
-/* تأثير الـ Hover الخاص بزر تسجيل الخروج الأحمر */
 a[href*="logout"]:hover, .logout-btn:hover {
     background: var(--neon-danger) !important;
     border-color: var(--neon-danger) !important;
@@ -354,7 +338,6 @@ a[href*="logout"]:hover, .logout-btn:hover {
     box-shadow: 0 0 25px rgba(255, 51, 102, 0.6) !important;
 }
 
-/* تنسيق وحجم الأيقونة الداخلية إن وجدت بالزرار */
 a[href*="dashboard"] img, .back-to-dashboard img, a[href*="index"] img {
     width: 18px !important;
     height: 18px !important;

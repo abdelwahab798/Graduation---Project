@@ -1,15 +1,10 @@
-/* -------------------------------------------------------------
-   المشروع: MediScan-AI - ملف التأثيرات البصرية الموحد والآمن
-   ------------------------------------------------------------- */
 
 document.addEventListener('DOMContentLoaded', () => {
     
-    // =============================================================
-    // 1. أنميشن خط نبضات القلب الموحد بملء الشاشة (Canvas Background)
-    // =============================================================
+    
     const canvas = document.getElementById('heartbeatCanvas');
     
-    // شغال فقط لو العنصر موجود في الصفحة الحالية، ولو مش موجود مش هيعطل باقي الألوان
+    
     if (canvas) {
         const ctx = canvas.getContext('2d');
         
@@ -25,7 +20,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const speed = 2.5; 
 
         function drawHeartbeat() {
-            if (!document.getElementById('heartbeatCanvas')) return; // أمان إضافي لو تم تغيير الصفحة
+            if (!document.getElementById('heartbeatCanvas')) return; 
             requestAnimationFrame(drawHeartbeat);
             
             ctx.fillStyle = 'rgba(2, 6, 23, 0.06)'; 
@@ -72,9 +67,7 @@ document.addEventListener('DOMContentLoaded', () => {
         drawHeartbeat();
     }
 
-    // =============================================================
-    // 2. تأثير وميض وتفاعل مربع الرفع عند سحب وإفلات الصورة (Drag & Drop)
-    // =============================================================
+    
     const dropZone = document.querySelector('.card') || document.getElementById('originalPreview');
     const fileInput = document.getElementById('fileInput');
 
@@ -106,9 +99,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // =============================================================
-    // 3. تأثير وميض الأزرار النيون عند الضغط
-    // =============================================================
+    
     const uploadBtn = document.getElementById('uploadBtn');
     if (uploadBtn) {
         uploadBtn.addEventListener('mousedown', () => {

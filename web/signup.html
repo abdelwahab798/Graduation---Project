@@ -9,7 +9,7 @@
 <body>
 
     <div class="glass-container" style="max-width: 480px; padding: 35px 35px;">
-        <div style="font-size: 50px; margin-bottom: 10px; filter: drop-shadow(0 0 8px var(--secondary-neon));">🚀</div>
+        <div style="font-size: 50px; margin-bottom: 10px; filter: drop-shadow(0 0 8px var(--secondary-neon));"></div>
         <h2>إنشاء حساب جديد</h2>
         <p style="margin-bottom: 25px;">انضم إلينا الآن وابدأ في فحص الأشعة بدعم الذكاء الاصطناعي</p>
 
@@ -57,12 +57,11 @@
 
         <p style="margin-top: 25px; font-size: 0.95rem;">
             تمتلك حساباً بالفعل؟ 
-            <a id="goToLogin" href="login.html" style="color: var(--secondary-neon); text-decoration: none; font-weight: 700; border-bottom: 1px dashed var(--secondary-neon);">تسجيل الدخول</a>
+            <a id="goToLogin" href="index.html" style="color: var(--secondary-neon); text-decoration: none; font-weight: 700; border-bottom: 1px dashed var(--secondary-neon);">تسجيل الدخول</a>
         </p>
     </div>
 
     <script>
-// 💡 إظهار وإخفاء حقول المريض بناءً على الـ Role المختار
 document.getElementById('role').addEventListener('change', function() {
     const patientFields = document.getElementById('patientFields');
     if (this.value === 'doctor') {
@@ -81,19 +80,16 @@ document.getElementById('submitBtn').addEventListener('click', async function() 
     const ageInput = document.getElementById('age').value.trim();
     const genderInput = document.getElementById('gender').value;
 
-    // التحقق من الحقول الأساسية لجميع المستخدمين
     if (!fullName || !email || !password || !role) {
         alert("برجاء ملء جميع الحقول الأساسية");
         return;
     }
 
-    // التحقق من السن والجنس فقط إذا كان الحساب مريض
     if (role === 'patient' && (!ageInput || !genderInput)) {
         alert("برجاء إدخال السن والجنس لإتمام ملفك الطبي كمريض");
         return;
     }
 
-    // تجهيز الـ Payload ليتطابق مع الـ Pydantic Schema الجديدة
     const signupData = {
         username: email, 
         email: email,
@@ -105,7 +101,6 @@ document.getElementById('submitBtn').addEventListener('click', async function() 
     signupData.age = parseFloat(ageInput);
     signupData.gender = genderInput;
     } else {
-    // لو طبيب، يفضل متجيبش سيرة الحقول دي في الـ JSON عشان الـ Validation
     signupData.age = null;
     signupData.gender = null;
 }

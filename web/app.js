@@ -15,7 +15,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
     const patientInputContainer = document.getElementById("patientInputContainer");
 
-    // 🔥 correction
     const correctionPanel = document.getElementById("correctionPanel");
     const predictionIdInput = document.getElementById("predictionIdInput");
     const correctedResultInput = document.getElementById("correctedResultInput");
@@ -37,7 +36,6 @@ document.addEventListener("DOMContentLoaded", () => {
             <input type="text" id="patientNameInput" placeholder="Patient Name">
         `;
     }
-     // بعد
 const roleBadge = document.getElementById('roleBadge');
 const roleLabel = document.getElementById('roleLabel');
 if (userRole === 'doctor') {
@@ -101,13 +99,11 @@ if (userRole === 'doctor') {
                 <p><b>ID:</b> ${data.prediction_id}</p>
             `;
 
-            // gradcam
             if (data.gradcam_image) {
                 gradcamImg.src = data.gradcam_image;
                 gradcamContainer.style.display = "block";
             }
 
-            // 🔥 show correction for doctor
             if (userRole === "doctor") {
                 correctionPanel.style.display = "block";
                 predictionIdInput.value = data.prediction_id || "";
@@ -119,7 +115,6 @@ if (userRole === 'doctor') {
         }
     });
 
-    // 🔥 correction submit
     submitCorrectionBtn.addEventListener("click", async () => {
 
         const id = predictionIdInput.value;
@@ -146,7 +141,7 @@ if (userRole === 'doctor') {
 
             if (!res.ok) throw new Error(data.detail || "Failed");
 
-            alert("Correction saved ✅");
+            alert("تم حفظ التصحيح");
             correctedResultInput.value = "";
 
         } catch (e) {

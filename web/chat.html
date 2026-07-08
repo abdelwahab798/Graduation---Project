@@ -52,18 +52,15 @@
 
     const userText = input.value.trim();
 
-    // 1. إضافة رسالة المستخدم للـ Chat Box
     chatBox.innerHTML += `<div class="message user">${userText}</div>`;
     input.value = '';
     chatBox.scrollTop = chatBox.scrollHeight;
 
-    // 2. إضافة رسالة مؤقتة "جاري الكتابة..." من البوت
     const loadingId = 'loading-' + Date.now();
     chatBox.innerHTML += `<div class="message bot" id="${loadingId}"> جاري تفكير الطبيب المساعد...</div>`;
     chatBox.scrollTop = chatBox.scrollHeight;
 
     try {
-        // 3. إرسال السؤال إلى الـ FastAPI Backend
         const response = await fetch('http://127.0.0.1:8000/api/rag/ask', {
             method: 'POST',
             headers: {
@@ -92,7 +89,6 @@
     chatBox.scrollTop = chatBox.scrollHeight;
 }
 
-// إضافة ميزة الإرسال عند الضغط على زر Enter من الكيبورد لراحة المستخدم
 document.getElementById('userInput').addEventListener('keypress', function (e) {
     if (e.key === 'Enter') {
         sendMessage();

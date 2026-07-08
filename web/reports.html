@@ -99,7 +99,6 @@
         .report-row span:first-child { color: #a0aec0; }
         .report-row span:last-child { font-weight: 600; }
 
-        /* ── تصحيح الطبيب ── */
         .correction-section {
             background: rgba(246,173,85,0.06);
             border: 1px solid rgba(246,173,85,0.35);
@@ -168,7 +167,6 @@
             <button class="tab-btn"        onclick="switchTab('tab-ml', this)">التحاليل والأمراض المزمنة (ML)</button>
         </div>
 
-        <!-- DL Tab — ظاهر بالـ default -->
         <div id="tab-dl" style="display:block;">
             <table class="report-table">
                 <thead>
@@ -186,7 +184,6 @@
             </table>
         </div>
 
-        <!-- ML Tab — مخفي بالـ default -->
         <div id="tab-ml" style="display:none;">
             <table class="report-table">
                 <thead>
@@ -205,7 +202,6 @@
         </div>
     </div>
 
-    <!-- Modal -->
     <div id="reportModal" class="modal">
         <div class="modal-content" id="printableReportArea">
             <span class="close-modal" onclick="closeReport()">&times;</span>
@@ -218,19 +214,15 @@
     </div>
 
     <script>
-        // ── Tab switching — بنتحكم في display مباشرة بدون CSS classes ──────────
+        
         function switchTab(tabId, btn) {
-            // إخفاء كل الـ tabs
             document.getElementById('tab-dl').style.display = 'none';
             document.getElementById('tab-ml').style.display = 'none';
-            // إزالة active من كل الأزرار
             document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
-            // إظهار الـ tab المطلوب وتفعيل الزرار
             document.getElementById(tabId).style.display = 'block';
             btn.classList.add('active');
         }
 
-        // ── Fetch data ───────────────────────────────────────────────────────────
         async function loadMedicalHistory() {
             const token = localStorage.getItem("token");
             try {
@@ -249,11 +241,11 @@
             }
         }
 
-        // ── Helpers ──────────────────────────────────────────────────────────────
+        
 
         function diabetesPredText(val) {
-            if (val == 1 || val === "1") return '⚠️ مصاب بالسكري';
-            if (val == 0 || val === "0") return '✅ غير مصاب';
+            if (val == 1 || val === "1") return ' مصاب بالسكري';
+            if (val == 0 || val === "0") return ' غير مصاب';
             return val ?? 'غير متاح';
         }
 
@@ -268,7 +260,7 @@
                     <span style="display:inline-block; padding:5px 12px; border-radius:10px;
                         background:rgba(246,173,85,0.15); color:#f6ad55; font-weight:bold;
                         border:1px solid rgba(246,173,85,0.35); font-size:0.82rem;">
-                        ✏️ ${actual_result}
+                         ${actual_result}
                     </span><br>
                     <small style="color:#718096; text-decoration:line-through; font-size:0.76rem;">${displayPred}</small>
                 `;
@@ -289,7 +281,7 @@
                 border:1px solid ${border}; font-size:0.82rem;">${pct}</span>`;
         }
 
-        // ── Render DL table ──────────────────────────────────────────────────────
+       
         function renderDLTable(xrays) {
             const tbody = document.getElementById("dl-table-body");
             if (!xrays || xrays.length === 0) {
@@ -307,14 +299,14 @@
                     <td>
                         <button class="btn" style="padding:6px 12px; font-size:0.82rem;"
                             onclick='viewReport("DL", ${JSON.stringify(x).replace(/'/g, "&#39;")})'>
-                            عرض 🖨️
+                            عرض 
                         </button>
                     </td>
                 </tr>
             `).join('');
         }
 
-        // ── Render ML table ──────────────────────────────────────────────────────
+       
         function renderMLTable(ckd, diabetes) {
             const tbody = document.getElementById("ml-table-body");
             let rows = [];
@@ -331,7 +323,7 @@
                         <td>
                             <button class="btn" style="padding:6px 12px; font-size:0.82rem;"
                                 onclick='viewReport("CKD", ${JSON.stringify(c).replace(/'/g, "&#39;")})'>
-                                عرض 🖨️
+                                عرض 
                             </button>
                         </td>
                     </tr>
@@ -350,7 +342,7 @@
                         <td>
                             <button class="btn" style="padding:6px 12px; font-size:0.82rem;"
                                 onclick='viewReport("DIA", ${JSON.stringify(d).replace(/'/g, "&#39;")})'>
-                                عرض 🖨️
+                                عرض 
                             </button>
                         </td>
                     </tr>
@@ -362,7 +354,7 @@
                 : '<tr><td colspan="7" style="text-align:center;color:#718096;padding:30px;">لا توجد تحاليل مسجلة</td></tr>';
         }
 
-        // ── Modal helpers ────────────────────────────────────────────────────────
+        
 
         function section(title, rows) {
             const inner = rows.map(([label, val]) =>
@@ -379,7 +371,7 @@
             const originalPred = isDiabetes ? diabetesPredText(data.prediction) : (data.prediction ?? 'غير متاح');
             return `
             <div class="correction-section">
-                <h4>✏️ تصحيح الطبيب</h4>
+                <h4> تصحيح الطبيب</h4>
                 <div class="report-row">
                     <span>التشخيص الجديد المعدَّل</span>
                     <span class="correction-new">${data.actual_result}</span>
@@ -396,31 +388,31 @@
             let content = '';
 
             if (type === 'DL') {
-                content += section('📋 بيانات الفحص', [
+                content += section(' بيانات الفحص', [
                     ['معرف الفحص',  `#EX-${data.exam_id}`],
                     ['اسم المريض',  data.patient_name],
                     ['تاريخ الفحص', data.date],
                     ['نوع الأشعة',  data.modality],
                 ]);
-                content += section('🤖 نتيجة الذكاء الاصطناعي', [
+                content += section(' نتيجة الذكاء الاصطناعي', [
                     ['تنبؤ الـ AI', data.prediction],
                     ['نسبة الثقة',  data.confidence != null ? (data.confidence * 100).toFixed(1) + '%' : 'N/A'],
                 ]);
                 content += correctionBlock(data, false);
                 if (data.gradcam) {
                     content += `<div class="report-section">
-                        <h4>🌡️ خريطة تركيز الموديل (Grad-CAM)</h4>
+                        <h4> خريطة تركيز الموديل (Grad-CAM)</h4>
                         <img src="${data.gradcam}" style="max-width:240px; border-radius:8px; border:1px solid #4a5568; margin-top:8px;">
                     </div>`;
                 }
 
             } else if (type === 'CKD') {
-                content += section('📋 بيانات المريض', [
+                content += section(' بيانات المريض', [
                     ['معرف السجل',  `#CKD-${data.record_id}`],
                     ['اسم المريض',  data.patient_name],
                     ['تاريخ الفحص', data.date],
                 ]);
-                content += section('🧪 القيم المخبرية المُدخلة', [
+                content += section(' القيم المخبرية المُدخلة', [
                     ['معدل الترشيح الكبيبي (GFR)', data.gfr],
                     ['كراتينين المصل',               data.serum_creatinine],
                     ['نيتروجين اليوريا (BUN)',        data.bun],
@@ -432,20 +424,20 @@
                     ['مستوى التوتر النفسي',          data.stress_level],
                     ['التاريخ العائلي للمرض',        data.family_history],
                 ]);
-                content += section('🤖 نتيجة الذكاء الاصطناعي', [
+                content += section(' نتيجة الذكاء الاصطناعي', [
                     ['تشخيص الموديل', data.prediction],
                     ['نسبة الثقة',    data.confidence != null ? (data.confidence * 100).toFixed(1) + '%' : 'N/A'],
                 ]);
                 content += correctionBlock(data, false);
 
-            } else { // DIA
+            } else { 
                 const predText = diabetesPredText(data.prediction);
-                content += section('📋 بيانات المريض', [
+                content += section(' بيانات المريض', [
                     ['معرف السجل',  `#DIA-${data.record_id}`],
                     ['اسم المريض',  data.patient_name],
                     ['تاريخ الفحص', data.date],
                 ]);
-                content += section('🧪 البيانات الصحية المُدخلة', [
+                content += section(' البيانات الصحية المُدخلة', [
                     ['الجنس',                   data.gender],
                     ['العمر',                   data.age],
                     ['ارتفاع ضغط الدم',         data.hypertension == 1 ? 'نعم' : 'لا'],
@@ -455,7 +447,7 @@
                     ['مستوى HbA1c',             data.hba1c],
                     ['مستوى الجلوكوز في الدم',  data.blood_glucose_level],
                 ]);
-                content += section('🤖 نتيجة الذكاء الاصطناعي', [
+                content += section('نتيجة الذكاء الاصطناعي', [
                     ['تشخيص الموديل', predText],
                     ['نسبة الثقة',    data.confidence != null ? (data.confidence * 100).toFixed(1) + '%' : 'N/A'],
                 ]);
@@ -465,7 +457,7 @@
             content += `
                 <div style="text-align:center; margin-top:20px;" class="btn-print-now">
                     <button class="btn" style="padding:10px 28px;" onclick="window.print()">
-                        🖨️ اطبع التقرير الطبي
+                         اطبع التقرير الطبي
                     </button>
                 </div>`;
 

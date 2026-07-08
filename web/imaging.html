@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MediScan AI - Diagnostic Dashboard</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        body {
+            display: block !important;
+            margin: 0 !important;
+            padding: 0 !important;
+        }
+
+        .custom-main-container {
+            display: flex !important;
+            flex-direction: column !important;
+            align-items: center !important;
+            justify-content: center !important;
+            max-width: 950px !important; 
+            margin: 0 auto !important;
+            padding: 30px 15px !important;
+            box-sizing: border-box !important;
+            float: none !important;
+        }
+
+        .custom-main-container header {
+            text-align: center !important;
+            margin-bottom: 30px !important;
+            width: 100% !important;
+            position: relative !important;
+            left: auto !important;
+            right: auto !important;
+            top: auto !important;
+        }
+
+        .custom-main-container .control-panel {
+            width: 100% !important;
+            max-width: 480px !important; 
+            margin: 0 auto 35px auto !important;
+            float: none !important;
+            display: block !important;
+            position: relative !important;
+            box-sizing: border-box !important;
+        }
+
+        .custom-main-container .results-panel {
+            display: grid !important;
+            grid-template-columns: 1fr 1fr !important; 
+            gap: 25px !important;
+            width: 100% !important;
+            max-width: 900px !important;
+            margin: 0 auto !important;
+            float: none !important;
+            clear: both !important;
+            position: relative !important;
+        }
+
+        .custom-main-container .results-panel .card {
+            width: 100% !important;
+            margin: 0 !important;
+            padding: 20px !important;
+            box-sizing: border-box !important;
+            display: flex !important;
+            flex-direction: column !important;
+            position: relative !important;
+            left: auto !important;
+            right: auto !important;
+        }
+        .role-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 14px;
+    border-radius: 20px;
+    font-size: 0.82rem;
+    font-weight: 700;
+    margin-top: 10px;
+}
+.role-patient {
+    background: rgba(0, 255, 204, 0.1);
+    color: var(--secondary-neon);
+    border: 1px solid var(--secondary-neon);
+}
+.role-doctor {
+    background: rgba(66, 153, 225, 0.1);
+    color: var(--accent-blue);
+    border: 1px solid var(--accent-blue);
+}
+
+        .image-preview, .gradcam-wrapper {
+            width: 100% !important;
+            height: 280px !important; 
+            background: rgba(0, 0, 0, 0.3) !important;
+            border: 1px dashed rgba(255, 255, 255, 0.15) !important;
+            border-radius: 12px !important;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            overflow: hidden !important;
+            margin-top: 15px !important;
+            box-sizing: border-box !important;
+        }
+
+        .image-preview img, #gradcamImg {
+            width: 100% !important;
+            height: 100% !important;
+            object-fit: contain !important; 
+        }
+
+        .custom-main-container h2 {
+            font-size: 1.25rem !important;
+            margin-bottom: 10px !important;
+            text-align: center !important;
+        }
+
+        .caption {
+            font-size: 0.8rem !important;
+            color: #a0aec0 !important;
+            margin-top: 10px !important;
+            text-align: center !important;
+            line-height: 1.4 !important;
+        }
+
+        
+        @media (max-width: 768px) {
+            .custom-main-container .results-panel {
+                grid-template-columns: 1fr !important;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="custom-main-container">
+        
+        <header>
+            <h1 style="font-size: 2rem; color: #ffffff;">MediScan AI Diagnostic Dashboard</h1>
+            <p style="color: #a0aec0; margin-top: 5px; font-size: 0.95rem;">منصة فحص واختبار نماذج الأشعة الطبية مدعومة بخاصية الـ Grad-CAM</p>
+            <div id="roleBadge" class="role-badge role-patient">
+            <span>🟢</span>
+            <span id="roleLabel">مريض</span>
+        </div>
+        </header>
+        
+
+        <div class="card control-panel">
+            <h2> إعدادات الفحص</h2>
+
+            <div class="form-group">
+                <label for="modelSelect">اختر نوع الأشعة / التحليل:</label>
+                <select id="modelSelect">
+                    <option value="/chest-xray/predict">Chest X-Ray Analysis (الالتهاب الرئوي)</option>
+                    <option value="/Brain_Stroke/predict">Brain Stroke Analysis (السكتة الدماغية)</option>
+                    <option value="/Brain_MRI/predict">Brain Tumor Analysis (أورام المخ)</option>
+                    <option value="/Diabetic_Retinopathy/predict">Diabetic_Retinopathy (امراض العين)</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="fileInput" class="custom-file-upload">
+                    اختر صورة الأشعة (PNG, JPG)
+                </label>
+                <input type="file" id="fileInput" accept="image/*">
+                <div id="fileName" class="file-name">لم يتم اختيار ملف بعد</div>
+            </div>
+
+            <div id="patientInputContainer"></div>
+
+            <button type="button" id="uploadBtn" class="btn" style="width: 100%; margin-top: 10px;" onclick="return false;"> ابدأ التحليل الفوري</button>
+<div id="correctionPanel" style="display:none; margin-top:15px; padding:10px; background:rgba(255,255,255,0.05); border-radius:10px;">
+
+    <h3 style="color:#00ffcc; text-align:center; font-size:1rem;">
+        🩺 تصحيح نتيجة التحليل (Doctor Only)
+    </h3>
+
+    <div class="form-group">
+        <label>Prediction ID</label>
+        <input type="number" id="predictionIdInput" placeholder="Auto filled after prediction" 
+               style="width:100%; padding:8px; margin-top:5px;">
+    </div>
+
+    <div class="form-group">
+        <label>Corrected Result</label>
+        <input type="text" id="correctedResultInput" 
+               style="width:100%; padding:8px; margin-top:5px;">
+    </div>
+
+    <button id="submitCorrectionBtn" class="btn" style="width:100%; margin-top:10px;">
+        Submit Correction
+    </button>
+</div>
+
+            <div id="loading" class="loading">
+                <div class="spinner"></div>
+                <p>جاري معالجة الصورة واستدعاء الـ Hooks...</p>
+            </div>
+        </div>
+
+        <div class="results-panel">
+            
+            <div class="card">
+                <h2>الصورة الأصلية</h2>
+                <div class="image-preview" id="originalPreview">
+                    <p class="placeholder-text" style="font-size: 0.85rem; color: #718096;">سيتم عرض الصورة المرفوعة هنا</p>
+                </div>
+            </div>
+
+            <div class="card">
+                <h2> نتيجة تحليل الذكاء الاصطناعي</h2>
+                <div id="resultOutput" class="result-output">
+                    <p class="placeholder-text" style="font-size: 0.85rem; color: #718096;">اضغط على زر التحليل لإظهار النتائج</p>
+                </div>
+
+                <div id="gradcamContainer" style="display: none; margin-top: 15px; width: 100%;">
+                    <h3 style="color: #00ffcc; font-size: 1rem; margin-bottom: 5px; text-align: center;"> خريطة تركيز الموديل (Grad-CAM)</h3>
+                    
+                    <div class="gradcam-wrapper">
+                        <img id="gradcamImg" src="" alt="Grad-CAM Output">
+                    </div>
+                    
+                    <p class="caption">المناطق الملونة بالأحمر والبرتقالي توضح التركيز الأعلى للموديل.</p>
+                </div>
+            </div>
+
+        </div>
+
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>

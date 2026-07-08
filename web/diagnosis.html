@@ -169,13 +169,11 @@
         <h1>مشخّص التحاليل</h1>
         <p style="color: #a0aec0; margin-bottom: 20px;">اختر نوع الفحص وأدخل البيانات المطلوبة للحصول على التشخيص.</p>
 
-        <!-- Role Badge -->
         <div id="roleBadge" class="role-badge role-patient">
             <span>🟢</span>
             <span id="roleLabel">مريض</span>
         </div>
 
-        <!-- Patient Name (للطبيب فقط - بيتحط هنا ديناميكياً) -->
         <div id="patientNameContainer" class="hidden-section" style="margin-bottom: 20px;">
             <label style="display:block; font-weight:700; margin-bottom:8px; color:#a0aec0;">
                 👤 اسم المريض (للطبيب فقط)
@@ -188,7 +186,6 @@
             >
         </div>
 
-        <!-- Model Selector -->
         <div class="form-group" style="margin-bottom: 20px;">
             <label style="display:block; font-weight:700; margin-bottom:8px;">نوع الموديل والفحص المستهدف:</label>
             <select id="modelSelect" onchange="toggleInputs()">
@@ -197,7 +194,6 @@
             </select>
         </div>
 
-        <!-- Diabetes Inputs -->
         <div id="diabetesInputs" class="dynamic-inputs">
             <div style="grid-column: span 2;">
                 <p class="section-title">بيانات نموذج السكري</p>
@@ -250,7 +246,6 @@
             </div>
         </div>
 
-        <!-- CKD Inputs -->
         <div id="ckdInputs" class="dynamic-inputs hidden-section">
             <div style="grid-column: span 2;">
                 <p class="section-title">بيانات نموذج أمراض الكلى المزمنة</p>
@@ -318,17 +313,14 @@
         const role  = localStorage.getItem('role')  || 'patient';
         const token = localStorage.getItem('token') || '';
 
-        // ── Role Badge ──
         const roleBadge = document.getElementById('roleBadge');
         const roleLabel = document.getElementById('roleLabel');
         if (role === 'doctor') {
             roleBadge.className = 'role-badge role-doctor';
             roleLabel.textContent = 'طبيب';
-            // إظهار حقل اسم المريض للطبيب فقط
             document.getElementById('patientNameContainer').classList.remove('hidden-section');
         }
 
-        // ── تبديل الـ inputs ──
         function toggleInputs() {
             const model = document.getElementById('modelSelect').value;
             document.getElementById('diabetesInputs').classList.toggle('hidden-section', model !== 'diabetes');
@@ -336,11 +328,10 @@
             document.getElementById('diagResult').innerHTML = '';
         }
 
-        // ── الـ analyze الرئيسي ──
         async function analyze() {
             if (!token) {
                 document.getElementById('diagResult').innerHTML =
-                    '<div class="error-card">❌ يجب تسجيل الدخول أولاً.</div>';
+                    '<div class="error-card"> يجب تسجيل الدخول أولاً.</div>';
                 return;
             }
 
@@ -351,7 +342,7 @@
 
             if (role === 'doctor' && !patientNameNote) {
                 document.getElementById('diagResult').innerHTML =
-                    '<div class="error-card">⚠️ من فضلك أدخل اسم المريض أولاً.</div>';
+                    '<div class="error-card"> من فضلك أدخل اسم المريض أولاً.</div>';
                 return;
             }
 
@@ -373,7 +364,7 @@
                 };
                 if (isNaN(payload.age) || isNaN(payload.bmi) || isNaN(payload.HbA1c_level) || isNaN(payload.blood_glucose_level)) {
                     document.getElementById('diagResult').innerHTML =
-                        '<div class="error-card">⚠️ من فضلك أكمل إدخال كافة بيانات السكري أولاً.</div>';
+                        '<div class="error-card"> من فضلك أكمل إدخال كافة بيانات السكري أولاً.</div>';
                     return;
                 }
 
@@ -394,7 +385,7 @@
                 };
                 if (isNaN(payload.gfr) || isNaN(payload.bun) || isNaN(payload.blood_pressure) || isNaN(payload.serum_creatinine)) {
                     document.getElementById('diagResult').innerHTML =
-                        '<div class="error-card">⚠️ من فضلك أكمل إدخال كافة تحاليل الكلى أولاً.</div>';
+                        '<div class="error-card"> من فضلك أكمل إدخال كافة تحاليل الكلى أولاً.</div>';
                     return;
                 }
             }
@@ -422,32 +413,31 @@
 
             } catch (error) {
                 document.getElementById('diagResult').innerHTML =
-                    `<div class="error-card">❌ خطأ: ${error.message}</div>`;
+                    `<div class="error-card"> خطأ: ${error.message}</div>`;
             }
         }
 
         // ── عرض النتيجة ──
         function renderResult(result, model) {
             let html = '<div class="result-card">';
-            html += '<p style="font-size:1rem; font-weight:700; color:var(--secondary-neon); margin-bottom:12px;">📊 نتيجة الفحص السريري</p>';
+            html += '<p style="font-size:1rem; font-weight:700; color:var(--secondary-neon); margin-bottom:12px;"> نتيجة الفحص السريري</p>';
 
             if (model === 'diabetes') {
                 const isPos     = result.diabetes_prediction === 1;
-                const diagText  = isPos ? '⚠️ توجد مؤشرات محتملة للإصابة بالسكري' : '✅ المؤشرات طبيعية ولا توجد إصابة';
+                const diagText  = isPos ? ' توجد مؤشرات محتملة للإصابة بالسكري' : ' المؤشرات طبيعية ولا توجد إصابة';
                 const diagColor = isPos ? '#f6ad55' : '#68d391';
                 html += `<div class="result-row"><span>التشخيص المقترح</span><span style="color:${diagColor}; font-weight:700;">${diagText}</span></div>`;
                 html += `<div class="result-row"><span>نسبة ثقة الموديل</span><span style="font-weight:700;">${result.probability}%</span></div>`;
-                html += `<div class="result-row" style="font-size:0.8rem; color:#a0aec0;"><span colspan="2">⚠️ هذا التشخيص استرشادي فقط ولا يغني عن مراجعة الطبيب المختص</span></div>`;
+                html += `<div class="result-row" style="font-size:0.8rem; color:#a0aec0;"><span colspan="2"> هذا التشخيص استرشادي فقط ولا يغني عن مراجعة الطبيب المختص</span></div>`;
             } else {
                 html += `<div class="result-row"><span>المرحلة المتوقعة للمرض</span><span style="font-weight:700; color:#f6ad55;">Stage ${result.predicted_stage}</span></div>`;
                 html += `<div class="result-row"><span>دقة التنبؤ للمرحلة</span><span style="font-weight:700;">${result.confidence_score}%</span></div>`;
-                html += `<div class="result-row" style="font-size:0.8rem; color:#a0aec0;"><span>⚠️ يُنصح بمراجعة طبيب الكلى لتأكيد النتيجة</span></div>`;
+                html += `<div class="result-row" style="font-size:0.8rem; color:#a0aec0;"><span> يُنصح بمراجعة طبيب الكلى لتأكيد النتيجة</span></div>`;
             }
 
             html += `<div class="result-row"><span>الحالة</span><span style="color:#68d391; font-size:0.85rem;">${result.status}</span></div>`;
             html += '</div>';
 
-            // ── correction box للطبيب فقط ──
             if (result.can_correct && role === 'doctor') {
                 const placeholder = model === 'ckd'
                     ? 'المرحلة الصحيحة (مثال: Stage 2)'
@@ -455,7 +445,7 @@
 
                 html += `
                 <div class="correction-box">
-                    <p class="correction-title">✏️ تصحيح التوقع (للطبيب فقط)</p>
+                    <p class="correction-title"> تصحيح التوقع (للطبيب فقط)</p>
                     <p style="font-size:0.85rem; color:#a0aec0; margin-bottom:12px;">
                         لو التوقع غير دقيق، أدخل النتيجة الصحيحة لتحسين الموديل لاحقاً
                     </p>
@@ -478,7 +468,7 @@
                         </button>
                     </div>
                     <p id="correctionStatus" style="display:none; color:#68d391; font-size:0.85rem; margin-top:10px;">
-                        ✅ تم التصحيح بنجاح وحفظه في قاعدة البيانات
+                         تم التصحيح بنجاح وحفظه في قاعدة البيانات
                     </p>
                 </div>`;
             }
@@ -486,7 +476,6 @@
             document.getElementById('diagResult').innerHTML = html;
         }
 
-        // ── إرسال التصحيح للـ API ──
         async function correctPrediction(predictionId) {
             const correctedResult = document.getElementById('correctionInput').value.trim();
             if (!correctedResult) {
@@ -514,7 +503,7 @@
                 document.getElementById('correctBtn').disabled = true;
 
             } catch (e) {
-                alert('❌ خطأ أثناء التصحيح: ' + e.message);
+                alert(' خطأ أثناء التصحيح: ' + e.message);
             }
         }
     </script>
